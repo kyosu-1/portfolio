@@ -12,9 +12,9 @@ function App() {
     <BrowserRouter>
       <Header />
       <Routes>
-          <Route path="/" element={<About />} />
-          <Route path="/projects" element={<Projects />} />
-          <Route path="/blogs" element={<Blogs />} >
+          <Route path="/portfolio/" element={<About />} />
+          <Route path="/portfolio/projects" element={<Projects />} />
+          <Route path="/portfolio/blogs" element={<Blogs />} >
             <Route path=":id" element={<BlogDetails />} />
           </Route>
       </Routes>
