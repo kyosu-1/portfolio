@@ -10,14 +10,6 @@ export type Experience = {
     company: string;
     year: string; // 期間や年を表す文字列
 };
-
-export type Blog = {
-    id: number;
-    title: string;
-    summary: string;
-    tags: string[];
-    content: string;
-};
   
 export type Project = {
     id: number;
@@ -27,9 +19,10 @@ export type Project = {
     link: string; // GitHub link or project link
 };
 
-export type BlogSummary = {
-    id: number;
+export type Blog = {
+    id: string;
     title: string;
     summary: string;
     tags: string[];
+    markdownPath: string;
   };
