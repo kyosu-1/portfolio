@@ -11,6 +11,10 @@ export default function Home() {
         <p className="mt-2 text-gray-500">
           ソフトウェアエンジニア。技術ブログを書いています。
         </p>
+        <div className="mt-3 flex gap-4">
+          <a href="https://github.com/kyosu-1" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-400 hover:text-accent">GitHub</a>
+          <a href="https://www.linkedin.com/in/shota-abe" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-400 hover:text-accent">LinkedIn</a>
+        </div>
       </section>
 
       <section className="py-4">
