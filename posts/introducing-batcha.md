@@ -97,7 +97,13 @@ ecspresso の `verify` と同様に、AWS API を呼ばずにテンプレート�
 batcha verify --config batcha.yml
 ```
 
-## 使い方
+## クイックスタート
+
+Homebrew でインストールできます。
+
+```bash
+brew install kyosu-1/tap/batcha
+```
 
 既存の Job Definition からセットアップを始められます。
 
@@ -114,10 +120,4 @@ batcha register --config batcha.yml
 
 ## おわりに
 
-AWS Batch を使っている方はぜひ試してみてください。Homebrew でインストールできます。Issue や PR も歓迎です。
-
-```bash
-brew install kyosu-1/tap/batcha
-```
-
-GitHub: [kyosu-1/batcha](https://github.com/kyosu-1/batcha)
+batcha のコードはほぼ Claude Code が書いたもので、自分は設計の方向付けと調整に徹しました。ecspresso という優れた手本があったのも大きいですが、こういうツールがサクッと作れてしまう、いい時代になりましたね。
