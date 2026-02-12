@@ -13,7 +13,7 @@ GitHub: [kyosu-1/batcha](https://github.com/kyosu-1/batcha)
 
 ## モチベーション
 
-ECS は Web サーバーや API のような常駐型のサービスを運用するのに向いていて、サービスとタスク定義を中心にデプロイを管理します。一方 AWS Batch は、ジョブキューとコンピュート環境を使ったバッチ処理の実行基盤で、管理の中心は Job Definition とジョブキューになります。AWS Batch はコンテナの実行基盤に ECS や EKS を利用するジョブスケジューリングサービスですが、デプロイの単位や運用の流れは異なります。
+ECS はサービスとタスク定義を中心にデプロイを管理します。一方 AWS Batch は、ジョブキューとコンピュート環境を使ったバッチ処理の実行基盤で、管理の中心は Job Definition とジョブキューになります。AWS Batch はコンテナの実行基盤に ECS や EKS を利用するジョブスケジューリングサービスですが、デプロイの単位や運用の流れは異なります。
 
 ECS には [@fujiwara](https://github.com/fujiwara) さん作の [ecspresso](https://github.com/kayac/ecspresso) という優れたデプロイツールがあります。サービスやタスク定義を JSON で宣言的に管理し、差分検出・Terraform 連携・デプロイ/ロールバックといった運用に必要な機能をひと通り備えたツールです。
 
