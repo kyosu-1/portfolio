@@ -135,6 +135,8 @@ GitHub Actions 用のアクションも用意しています。
 - uses: kyosu-1/batcha@v0
   with:
     args: "register --config batcha.yml"
+  env:
+    IMAGE_TAG: ${{ github.sha }}
 ```
 
 ## おわりに
