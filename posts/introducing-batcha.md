@@ -129,7 +129,7 @@ batcha register --config batcha.yml
 
 ## GitHub Actions
 
-GitHub Actions 用のアクションも用意しています。
+GitHub Actions 用のアクションも用意しており、CI/CD の中でイメージタグの更新から Job Definition の登録まで完結できます。
 
 ```yaml
 - uses: kyosu-1/batcha@v0
