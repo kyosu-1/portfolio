@@ -118,6 +118,16 @@ batcha diff --config batcha.yml
 batcha register --config batcha.yml
 ```
 
+## GitHub Actions
+
+GitHub Actions 用のアクションも用意しています。
+
+```yaml
+- uses: kyosu-1/batcha@v0
+  with:
+    args: "register --config batcha.yml"
+```
+
 ## おわりに
 
 batcha のコードはほぼ Claude Code が書いたもので、自分は設計の方向付けと調整に徹しました。ecspresso という優れた手本があったのも大きいですが、こういうツールがサクッと作れてしまう、いい時代になりましたね。
