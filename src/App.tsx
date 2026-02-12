@@ -1,25 +1,19 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route } from "react-router-dom";
+import Layout from "./components/Layout";
+import Home from "./pages/Home";
+import BlogPost from "./pages/BlogPost";
+import NotFound from "./pages/NotFound";
 
-import About from './pages/About';
-import Projects from './pages/Projects';
-import Blogs from './pages/Blogs';
-import BlogDetails from './pages/BlogDetails'
-import Header from './components/Header';
-
-function App() {
+export default function App() {
   return (
-    <BrowserRouter>
-      <Header />
+    <HashRouter>
       <Routes>
-          <Route path="/portfolio/" element={<About />} />
-          <Route path="/portfolio/projects" element={<Projects />} />
-          <Route path="/portfolio/blogs" element={<Blogs />} >
-            <Route path=":id" element={<BlogDetails />} />
-          </Route>
+        <Route element={<Layout />}>
+          <Route index element={<Home />} />
+          <Route path="blog/:slug" element={<BlogPost />} />
+          <Route path="*" element={<NotFound />} />
+        </Route>
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
-
-export default App;
