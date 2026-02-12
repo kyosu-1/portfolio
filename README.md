@@ -1,18 +1,24 @@
-# Portfolio
+# kyosu.dev
 
-ポートフォリオ
+ブログ中心のポートフォリオサイト
 
 ## 利用技術
 
 - TypeScript
-- React
+- React 19
+- Vite 6
+- Tailwind CSS v4
 
-## 開発用
-
-立ち上げ
+## セットアップ
 
 ```shell
-$ npm start
+npm install
 ```
 
-アクセス: `http://localhost:3000`
+## 開発
+
+```shell
+npm run dev
+```
+
+アクセス: `http://localhost:5173`

@@ -1,17 +1,19 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import './Header.css';
+import { Link } from "react-router-dom";
 
-const Header = () => {
+export default function Header() {
   return (
-    <header className="header">
-      <nav className="navigation">
-        <Link to="/portfolio/" className="nav-link">About</Link>
-        <Link to="/portfolio/projects" className="nav-link">Projects</Link>
-        <Link to="/portfolio/blogs" className="nav-link">Blogs</Link>
+    <header className="py-8">
+      <nav className="flex items-center justify-between">
+        <Link to="/" className="text-xl font-bold text-gray-800 hover:text-accent">
+          kyosu.dev
+        </Link>
+        <Link
+          to="/"
+          className="text-sm text-gray-500 hover:text-accent"
+        >
+          Blog
+        </Link>
       </nav>
     </header>
   );
-};
-
-export default Header;
+}
