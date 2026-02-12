@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "homepage": "https://kyosu-1.github.io/portfolio",
+  "homepage": "https://kyosu.dev",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
