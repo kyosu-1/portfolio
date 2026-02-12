@@ -31,11 +31,20 @@ ecspresso の主要機能に対応する形で、AWS Batch 向けの機能を実
 | ecspresso (ECS) | batcha (AWS Batch) |
 |---|---|
 | タスク定義を JSON テンプレートで管理 | Job Definition を JSON テンプレートで管理 |
+| `ecspresso register` でタスク定義登録 | `batcha register` で Job Definition 登録 |
 | `ecspresso diff` で差分検出 | `batcha diff` で差分検出 |
 | `ecspresso verify` でローカル検証 | `batcha verify` でローカル検証 |
 | `ecspresso init` で既存リソースから生成 | `batcha init` で既存定義から生成 |
 | `ecspresso run` でタスク実行 | `batcha run` でジョブ実行 |
 | tfstate プラグインで Terraform 連携 | 同様に tfstate プラグインで連携 |
+
+### Job Definition の登録
+
+`batcha register` で Job Definition を AWS Batch に登録します。リモートとの差分がなければ登録をスキップするため、不要なリビジョンが増えません。
+
+```bash
+batcha register --config batcha.yml
+```
 
 ### 宣言的な Job Definition 管理
 
@@ -57,7 +66,7 @@ ecspresso と同様に、定義を JSON テンプレートで管理します。�
 
 ### 差分検出
 
-ecspresso の `diff` と同じく、リモートとローカルの差分を確認してからデプロイできます。変更がなければ登録をスキップするため、不要なリビジョンが増えません。
+ecspresso の `diff` と同じく、リモートとローカルの差分を確認してからデプロイできます。
 
 ```bash
 batcha diff --config batcha.yml
