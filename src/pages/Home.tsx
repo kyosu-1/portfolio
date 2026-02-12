@@ -9,7 +9,7 @@ export default function Home() {
       <section className="py-8">
         <h1 className="text-2xl font-bold text-gray-800">Hi, I'm kyosu-1</h1>
         <p className="mt-2 text-gray-500">
-          ソフトウェアエンジニア。技術ブログを書いています。
+          ソフトウェアエンジニア。
         </p>
         <div className="mt-3 flex gap-4">
           <a href="https://github.com/kyosu-1" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-400 hover:text-accent">GitHub</a>
