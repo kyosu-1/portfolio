@@ -53,11 +53,20 @@ ISUCON の練習に [private-isu](https://github.com/catatsuy/private-isu) を�
 
 ## 環境
 
-環境構築には自作の [isuenv](https://github.com/kyosu-1/isuenv) を使いました。ISUCON の過去問と private-isu の練習環境を、公開AMIから EC2 にコマンド一発で作って壊せる CLI です。
+環境構築には自作の [isuenv](https://github.com/kyosu-1/isuenv) を使いました。ISUCON の過去問（isucon9〜14）と private-isu の練習環境を、公開AMIから EC2 上にコマンド一発で作って壊せる CLI です。
 
 ```sh
-isuenv up private-isu --nodes 1 --bench --ttl 6h
+brew install kyosu-1/tap/isuenv
+
+isuenv up private-isu --nodes 1 --bench --ttl 6h   # 環境を作る
+isuenv ssh private-isu                             # SSH
+isuenv list                                        # 稼働中の環境・概算コスト・残りTTL
+isuenv down private-isu                            # 破棄
 ```
+
+`--ttl` で指定した時間が過ぎるとインスタンス側から自動で terminate されるので、**落とし忘れて課金が続く事故が起きません**。ssh config も自動生成されるため `ssh private-isu-1` がそのまま通りますし、グローバルIPが変わっても `isuenv ssh` を打ち直せばセキュリティグループごと貼り直されます。
+
+`--bench` は今回追加したオプションです。private-isu の公式推奨は競技サーバー `c7a.large` / ベンチマーカー `c7a.xlarge` なのですが、それまで全ノード同じインスタンスタイプでしか作れませんでした。途中でベンチマーカー側が先に飽和していることに気づいて足したものです。
 
 private-isu のレギュレーションは **EC2 1台構成が前提**で、「起動したインスタンス以外の外部リソースを利用する行為（他のインスタンスに処理を委譲するなど）は禁止する」と明記されています。なので競技サーバーは `c7a.large`（2 vCPU / 3.7GB）1台のまま最後まで通しました。ベンチマーカーは競技対象外なので別インスタンスです。
 
