@@ -79,8 +79,6 @@ private-isu のレギュレーションは **EC2 1台構成が前提**で、「�
 - [negative-results.md](https://github.com/kyosu-1/private-isu-2026/blob/main/docs/playbook/improvements/negative-results.md) — 効かなかったこと3件
 - [scores/log.md](https://github.com/kyosu-1/private-isu-2026/blob/main/scores/log.md) — 全64回の計測記録
 
-個人的に面白かったのは、pprof が38%と指していたテンプレート描画を17.7倍速い実装に置き換えてもスコアが1ミリも動かなかったところです。プロセス別CPUを測ったらアプリはマシン全体の4割しか使っておらず、期待値は約6%＝計測ノイズ以下でした。この手の話は [negative-results.md](https://github.com/kyosu-1/private-isu-2026/blob/main/docs/playbook/improvements/negative-results.md) にまとめてあります。
-
 なお、ベンチを連続で回すと2回目以降が壊れる問題が未解決のまま残っています。おそらくベンチマーカー側のポート枯渇で、アプリではなく計測環境側の問題だと思っていますが、そこで時間切れになりました。
 
 ## おわりに
