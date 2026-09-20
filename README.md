@@ -4,9 +4,8 @@
 
 ## 利用技術
 
+- Astro 7
 - TypeScript
-- React 19
-- Vite 6
 - Tailwind CSS v4
 
 ## セットアップ
@@ -21,4 +20,12 @@ npm install
 npm run dev
 ```
 
-アクセス: `http://localhost:5173`
+アクセス: `http://localhost:4321`
+
+## テスト
+
+ビルド成果物（`dist/`）に対する検証を実行する。
+
+```shell
+npm test
+```

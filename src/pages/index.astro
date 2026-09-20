@@ -20,6 +20,15 @@ const schemas = [personSchema(site), websiteSchema(site)];
   description="Shota Abe (kyosu-1) のポートフォリオ。ソフトウェアエンジニアとしての経歴と技術ブログ。"
   schemas={schemas}
 >
+  {/* 旧 HashRouter 時代の /#/blog/{slug} を新URLへ送る。
+      外部に共有済みのリンクへの保険であり、不要と判断したら削除してよい。 */}
+  <script is:inline>
+    (function () {
+      var m = location.hash.match(/^#\/blog\/([A-Za-z0-9._-]+)\/?$/);
+      if (m) location.replace('/blog/' + m[1] + '/');
+    })();
+  </script>
+
   <section class="py-8">
     <h1 class="text-2xl font-bold text-gray-800">
       Hi, I'm {author.name} ({author.handle})
@@ -68,15 +77,19 @@ const schemas = [personSchema(site), websiteSchema(site)];
   <section class="py-4">
     <h2 class="text-lg font-semibold text-gray-800">Blog</h2>
     <div class="mt-4 flex flex-col gap-3">
-      {posts.map((post) => (
-        <BlogCard
-          id={post.id}
-          title={post.data.title}
-          date={post.data.date}
-          tags={post.data.tags}
-          summary={post.data.summary}
-        />
-      ))}
+      {posts.length > 0 ? (
+        posts.map((post) => (
+          <BlogCard
+            id={post.id}
+            title={post.data.title}
+            date={post.data.date}
+            tags={post.data.tags}
+            summary={post.data.summary}
+          />
+        ))
+      ) : (
+        <p class="text-sm text-gray-400">記事はまだありません。</p>
+      )}
     </div>
   </section>
 </Layout>
