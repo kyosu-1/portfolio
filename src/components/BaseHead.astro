@@ -1,0 +1,48 @@
+---
+interface Props {
+  title: string;
+  description: string;
+  type?: 'website' | 'article';
+  publishedDate?: Date;
+  tags?: string[];
+}
+
+const { title, description, type = 'website', publishedDate, tags = [] } = Astro.props;
+
+// Astro.site は astro.config.mjs の site。sitemap の必須要件でもある。
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+---
+
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" href="/favicon.ico" />
+
+<title>{title}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+
+<meta property="og:type" content={type} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical} />
+<meta property="og:site_name" content="kyosu.dev" />
+<meta property="og:locale" content="ja_JP" />
+{publishedDate && (
+  <meta property="article:published_time" content={publishedDate.toISOString()} />
+)}
+{tags.map((tag) => <meta property="article:tag" content={tag} />)}
+
+{/* og:image を用意していないため summary。画像を入れる際は
+    summary_large_image に変え、og:image / twitter:image を足す。 */}
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+
+<link rel="alternate" type="application/rss+xml" title="kyosu.dev" href="/rss.xml" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+  rel="stylesheet"
+/>

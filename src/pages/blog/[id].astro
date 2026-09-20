@@ -14,7 +14,13 @@ const { Content } = await render(post);
 const displayDate = formatPostDate(post.data.date);
 ---
 
-<Layout title={`${post.data.title} | kyosu.dev`} description={post.data.summary}>
+<Layout
+  title={`${post.data.title} | kyosu.dev`}
+  description={post.data.summary}
+  type="article"
+  publishedDate={post.data.date}
+  tags={post.data.tags}
+>
   <article>
     <a href="/" class="text-sm text-gray-400 hover:text-accent">&larr; Back</a>
 
