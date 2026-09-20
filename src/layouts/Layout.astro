@@ -12,9 +12,10 @@ interface Props {
   tags?: string[];
   schemas?: object[];
   noindex?: boolean;
+  ogImage?: string;
 }
 
-const { title, description, type, publishedDate, tags, schemas, noindex } = Astro.props;
+const { title, description, type, publishedDate, tags, schemas, noindex, ogImage } = Astro.props;
 ---
 
 <!doctype html>
@@ -28,6 +29,7 @@ const { title, description, type, publishedDate, tags, schemas, noindex } = Astr
       tags={tags}
       schemas={schemas}
       noindex={noindex}
+      ogImage={ogImage}
     />
   </head>
   <body class="bg-white text-gray-800 antialiased">

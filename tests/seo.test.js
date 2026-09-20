@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readDist, metaContent } from './helpers.js';
+import { readDist, readDistBinary, metaContent } from './helpers.js';
 
 test('ページごとに固有の title が出る', async () => {
   const home = await readDist('index.html');
@@ -63,13 +63,41 @@ test('トップの description は経歴に言及しない（Experience/Educatio
   assert.doesNotMatch(desc ?? '', /経歴/, `description が経歴に言及している: ${desc}`);
 });
 
-test('Twitter カードが出る（画像は未設定なので summary）', async () => {
+test('Twitter カードが出る（og:image を用意したので summary_large_image）', async () => {
   const post = await readDist('blog/introducing-batcha/index.html');
-  assert.equal(metaContent(post, 'name', 'twitter:card'), 'summary');
+  assert.equal(metaContent(post, 'name', 'twitter:card'), 'summary_large_image');
   assert.equal(metaContent(post, 'name', 'twitter:title'), 'ecspressoライクなAWS Batchデプロイツール「batcha」を作った | kyosu.dev');
 });
 
-test('og:image は出力しない', async () => {
-  const post = await readDist('blog/introducing-batcha/index.html');
-  assert.equal(metaContent(post, 'property', 'og:image'), null);
+test('og:image / twitter:image が絶対URLで出て、対応する画像ファイルを指す', async () => {
+  const cases = [
+    ['index.html', 'https://kyosu.dev/og/home.png', 'og/home.png'],
+    ['about/index.html', 'https://kyosu.dev/og/about.png', 'og/about.png'],
+    [
+      'blog/introducing-batcha/index.html',
+      'https://kyosu.dev/og/blog/introducing-batcha.png',
+      'og/blog/introducing-batcha.png',
+    ],
+    [
+      'blog/private-isu-with-claude-code/index.html',
+      'https://kyosu.dev/og/blog/private-isu-with-claude-code.png',
+      'og/blog/private-isu-with-claude-code.png',
+    ],
+  ];
+
+  for (const [htmlPath, expectedUrl, imagePath] of cases) {
+    const html = await readDist(htmlPath);
+    assert.equal(metaContent(html, 'property', 'og:image'), expectedUrl, `${htmlPath} の og:image`);
+    assert.equal(metaContent(html, 'property', 'og:image:width'), '1200', `${htmlPath} の og:image:width`);
+    assert.equal(metaContent(html, 'property', 'og:image:height'), '630', `${htmlPath} の og:image:height`);
+    assert.equal(metaContent(html, 'name', 'twitter:image'), expectedUrl, `${htmlPath} の twitter:image`);
+    // og:image が指す実体ファイルが dist に存在することも確認する
+    await assert.doesNotReject(readDistBinary(imagePath), `${imagePath} が dist に存在しない`);
+  }
+});
+
+test('404 は noindex なので og:image / twitter:image を出さない', async () => {
+  const notFound = await readDist('404.html');
+  assert.equal(metaContent(notFound, 'property', 'og:image'), null);
+  assert.equal(metaContent(notFound, 'name', 'twitter:image'), null);
 });

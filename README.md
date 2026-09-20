@@ -38,6 +38,7 @@ summary: 記事の要約。
 - `title` / `date` / `summary` は必須、`tags` は省略可（省略時は `[]`）
 - `summary` は meta description と OG description にそのまま使われるため必須。**欠けると `astro build` が失敗する**
 - `date` は `YYYY-MM-DD` 形式のみ（タイムゾーン付きの日時は不可）
+- OG 画像（`/og/blog/{slug}.png`）はタイトルとタグからビルド時に自動生成される。追加の作業は不要
 
 ## テスト
 

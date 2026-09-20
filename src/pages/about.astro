@@ -4,6 +4,7 @@ import { author, education, experiences, sortExperiences } from '../data/profile
 import { formatYearMonth } from '../lib/date';
 import { fullPersonSchema, profilePageSchema } from '../lib/structured-data';
 import { canonicalUrl } from '../lib/url';
+import { ogImagePath } from '../lib/og/path';
 
 const career = sortExperiences(experiences);
 
@@ -16,6 +17,7 @@ const schemas = [profilePageSchema(site, canonical), fullPersonSchema(site)];
   title="Shota Abe (kyosu-1) | kyosu.dev"
   description="Shota Abe (kyosu-1) の経歴と学歴。"
   schemas={schemas}
+  ogImage={ogImagePath('about')}
 >
   <section class="py-8">
     <h1 class="text-2xl font-bold text-gray-800">About Me</h1>

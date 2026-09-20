@@ -4,6 +4,7 @@ import Layout from '../layouts/Layout.astro';
 import BlogCard from '../components/BlogCard.astro';
 import { author } from '../data/profile';
 import { personSchema, websiteSchema } from '../lib/structured-data';
+import { ogImagePath } from '../lib/og/path';
 
 const posts = (await getCollection('blog')).sort(
   (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
@@ -17,6 +18,7 @@ const schemas = [personSchema(site), websiteSchema(site)];
   title="kyosu.dev — Shota Abe (kyosu-1)"
   description="Shota Abe (kyosu-1) のポートフォリオ。ソフトウェアエンジニアが書いた技術記事の一覧です。"
   schemas={schemas}
+  ogImage={ogImagePath('home')}
 >
   {/* 旧 HashRouter 時代の /#/blog/{slug} を新URLへ送る。
       外部に共有済みのリンクへの保険であり、不要と判断したら削除してよい。 */}

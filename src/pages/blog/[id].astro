@@ -5,6 +5,7 @@ import TagBadge from '../../components/TagBadge.astro';
 import { formatPostDate } from '../../lib/date';
 import { blogPostingSchema } from '../../lib/structured-data';
 import { canonicalUrl } from '../../lib/url';
+import { ogImagePath } from '../../lib/og/path';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog');
@@ -36,6 +37,7 @@ const schemas = [
   publishedDate={post.data.date}
   tags={post.data.tags}
   schemas={schemas}
+  ogImage={ogImagePath(`blog/${post.id}`)}
 >
   <article>
     <a href="/" class="text-sm text-gray-400 hover:text-accent">&larr; Back</a>
