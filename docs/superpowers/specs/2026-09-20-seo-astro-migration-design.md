@@ -35,7 +35,8 @@ kyosu.dev が検索結果に出ていない。体感ではなく構造的な原�
 
 - 記事が個別URLでインデックスされ、技術トピックの検索から流入すること（主目的）
 - 「kyosu-1」「Shota Abe」での検索でポートフォリオが出ること（副目的）
-- トップページに経歴・学歴を掲載し、人物としての同定に足る情報量を持たせること
+- ~~トップページに経歴・学歴を掲載し、人物としての同定に足る情報量を持たせること~~
+  **[2026-09-20 追記] 経歴の `/about/` 分離により、この行は事実と異なる。** 経歴・学歴は `/about/` に掲載する。トップは氏名・ハンドル・headline・GitHub/LinkedIn（Hero）で人物としての同定に足る情報量を持たせ、経歴の詳細は `/about/` が担う。
 
 ## 非ゴール
 
@@ -101,6 +102,8 @@ Markdown 処理は Astro Content Collections、シンタックスハイライト
     ├── CNAME
     └── favicon.ico
 ```
+
+**[2026-09-20 追記] `src/pages/about.astro`（`/about/`）を追加した。** 経歴の `/about/` 分離に伴う新規ページで、上記ディレクトリ構成には含まれていない。`src/pages/` は `index.astro` / `about.astro` / `blog/[id].astro` / `rss.xml.ts` / `robots.txt.ts` / `404.astro` の6種になる。
 
 ### astro.config.mjs
 
@@ -192,6 +195,8 @@ const { Content } = await render(post);
 - **Twitter** — `twitter:card` / `twitter:title` / `twitter:description`
 - `<link rel="alternate" type="application/rss+xml" href="/rss.xml">`
 - **JSON-LD**（下記）
+
+**[2026-09-20 追記] `noindex` が true のページでは `canonical` と `og:url` を出さない。** `dist/404.html` のように canonical の宛先URL（`/404/`）が実際には生成されないページに canonical を出すのは有害なため。
 
 `og:image` は未決事項（後述）。画像を持たない間は `twitter:card` を `summary` にし、画像が入った時点で `summary_large_image` に切り替える。
 
@@ -356,13 +361,17 @@ export interface Experience {
 「デプロイしたら検索に出るはず」では終わらせない。`npm run build` 後に `dist/` に対して以下を確認する。
 
 1. **本文の実在** — `dist/blog/private-isu-with-claude-code/index.html` に記事本文の一節が含まれること（grep）。初期HTMLに本文が入ることが移行の本質なので、これが通らなければ他は無意味
-2. **メタ情報** — 各ページの `<title>` が固有であること、`<meta name="description">` / `<link rel="canonical">` / `og:url` が正しい絶対URLで存在すること
-3. **構造化データ** — トップに `Person`、記事に `BlogPosting` の JSON-LD が含まれること。`Person` の `name` / `worksFor` / `alumniOf` が Experience セクションの表示内容と一致すること。Google の Rich Results Test でも確認する
-4. **プロフィール** — `dist/index.html` に `Shota Abe` と職歴4社名が実テキストとして含まれること。除外分の判定は社名ではなく日付で行う（`Mercari` は現職として正しく出現するため）: `2023/10`・`2025/03`・`サイバーエージェント`・`sho013039` のいずれも含まれ**ない**こと
+2. ~~**メタ情報** — 各ページの `<title>` が固有であること、`<meta name="description">` / `<link rel="canonical">` / `og:url` が正しい絶対URLで存在すること~~
+   **[2026-09-20 追記]** `<title>` / `<meta name="description">` の固有性はすべてのページに当てはまるが、`<link rel="canonical">` / `og:url` は `noindex` を出すページ（`404.html` など、canonical の宛先URLが存在しないページ）には**出さない**。この2つの「存在すること」の確認対象は indexable なページ（トップ・記事・`/about/`）に限る
+3. ~~**構造化データ** — トップに `Person`、記事に `BlogPosting` の JSON-LD が含まれること。`Person` の `name` / `worksFor` / `alumniOf` が Experience セクションの表示内容と一致すること。Google の Rich Results Test でも確認する~~
+   **[2026-09-20 追記]** トップの `Person`（`personSchema()`）はもはや `worksFor` / `alumniOf` を持たない軽量版。`worksFor` / `alumniOf` は `/about/` の `Person`（完全版、`fullPersonSchema()`）が持ち、`/about/` の Experience セクションの表示内容と一致することを確認する。トップと `/about/` の `Person` は `@id` で同一エンティティとして結びく。Google の Rich Results Test での確認は両ページに対して行う
+4. ~~**プロフィール** — `dist/index.html` に `Shota Abe` と職歴4社名が実テキストとして含まれること。除外分の判定は社名ではなく日付で行う（`Mercari` は現職として正しく出現するため）: `2023/10`・`2025/03`・`サイバーエージェント`・`sho013039` のいずれも含まれ**ない**こと~~
+   **[2026-09-20 追記]** `Shota Abe` は `dist/index.html` と `dist/about/index.html` の両方に含まれる。職歴4社名は `dist/about/index.html` にのみ含まれ、`dist/index.html` には**含まれない**こと（移設漏れの回帰チェック）。除外分・連絡先の判定方法（社名ではなく日付で行う、`sho013039` を含めない）自体は変わらず、確認対象が `dist/about/index.html` に移る
 5. **sitemap** — `dist/sitemap-0.xml` にトップと全記事URLが列挙されていること
 6. **robots.txt** — `Sitemap: https://kyosu.dev/sitemap-index.xml` を含むこと
 7. **JS 配信量** — `dist/` に React のバンドルが残っていないこと
-8. **見た目** — `npm run preview` で現行サイトと並べ、**意図した変更（Hero の氏名、Experience / Education セクションの追加）以外に差分がないこと**。記事ページは完全に一致するはずなので、コードブロックの配色を特に確認する
+8. ~~**見た目** — `npm run preview` で現行サイトと並べ、**意図した変更（Hero の氏名、Experience / Education セクションの追加）以外に差分がないこと**。記事ページは完全に一致するはずなので、コードブロックの配色を特に確認する~~
+   **[2026-09-20 追記]** 「意図した変更」はその後増えている。Experience / Education は `/about/` へ移動し（トップからは消えた）、雇用形態バッジ、Header の `About` リンク、トップの `description` 文言変更が加わった。現時点で「意図した変更」に含まれるのはこれらすべて
 
 ## コード外の手順（デプロイ後に実施）
 
