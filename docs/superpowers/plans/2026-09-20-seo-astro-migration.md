@@ -61,7 +61,9 @@ spec の構成図に `src/lib/` は含まれていないが、日付整形と構
 
 このリポジトリにはテストが1つもない。静的サイトにとって意味のある検証は「**ビルド成果物に何が入っているか**」であり、それがまさに今回直そうとしている問題（初期HTMLに本文もメタ情報もない）そのものなので、`dist/` に対するアサーションをテストとする。
 
-新しい依存は追加しない。Node.js 22 の組み込みテストランナー（`node --test`）を使う。`npm test` は `astro build` を実行してから `tests/` を走らせるため、常に最新の成果物を検証する。
+新しい依存は追加しない。Node.js 22 の組み込みテストランナー（`node --test`）を使う。`npm test` は `astro build` を実行してからテストを走らせるため、常に最新の成果物を検証する。
+
+`node --test` にパス引数を渡さないのは、Node 22 では `node --test tests/` がディレクトリをテストファイルとして扱おうとして exit 1 になるため（検証済み）。引数なしの既定探索が `tests/*.test.js` を拾う。
 
 ---
 
@@ -81,7 +83,7 @@ React のビルドパイプラインを Astro に置き換え、最小のトッ�
 - Produces:
   - `Layout.astro` の Props: `{ title: string; description: string }`。Task 5 で `type` / `publishedDate` / `tags` / `schemas` が追加される
   - `tests/helpers.js`: `readDist(relPath: string): Promise<string>`, `metaContent(html: string, attr: string, value: string): string | null`, `jsonLdBlocks(html: string): object[]`, `plainText(html: string): string`
-  - `npm test` = `astro build && node --test tests/`
+  - `npm test` = `astro build && node --test`（パス引数なし。Node の既定の `**/*.test.js` 探索に任せる）
 
 - [ ] **Step 1: React 系の依存を外し、Astro を入れる**
 
@@ -100,7 +102,7 @@ npm install -D @astrojs/check@^0.9
     "dev": "astro dev",
     "build": "astro check && astro build",
     "preview": "astro preview",
-    "test": "astro build && node --test tests/"
+    "test": "astro build && node --test"
   },
 ```
 
