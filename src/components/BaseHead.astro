@@ -1,5 +1,9 @@
 ---
 import { canonicalUrl } from '../lib/url';
+// 定数だけを constants.ts から取る。render.ts を直接 import すると
+// satori / @resvg/resvg-js（ビルド時専用の重い依存）までクライアント側の
+// 型解決に引き込みかねないため避ける。
+import { OG_WIDTH, OG_HEIGHT } from '../lib/og/constants';
 
 interface Props {
   title: string;
@@ -10,6 +14,8 @@ interface Props {
   schemas?: object[];
   /** true のとき noindex を出す。canonical が存在しないURL（404 など）を指すページ用 */
   noindex?: boolean;
+  /** ページ相対パス（例: /og/blog/introducing-batcha.png）。省略時は og:image を出さない */
+  ogImage?: string;
 }
 
 const {
@@ -20,10 +26,13 @@ const {
   tags = [],
   schemas = [],
   noindex = false,
+  ogImage,
 } = Astro.props;
 
 // Astro.site は astro.config.mjs の site。sitemap の必須要件でもある。
 const canonical = canonicalUrl(Astro.url.pathname, Astro.site!);
+// og:image / twitter:image も canonical と同じく Astro.site 基準の絶対URLにする
+const ogImageUrl = ogImage ? new URL(ogImage, Astro.site!).href : undefined;
 ---
 
 <meta charset="UTF-8" />
@@ -47,9 +56,18 @@ const canonical = canonicalUrl(Astro.url.pathname, Astro.site!);
 )}
 {tags.map((tag) => <meta property="article:tag" content={tag} />)}
 
-{/* og:image を用意していないため summary。画像を入れる際は
-    summary_large_image に変え、og:image / twitter:image を足す。 */}
-<meta name="twitter:card" content="summary" />
+{/* noindex のページには対応する canonical URL が無い（404 など）ため、
+    それを指す og:image / twitter:image も出さない */}
+{!noindex && ogImageUrl && (
+  <>
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:width" content={String(OG_WIDTH)} />
+    <meta property="og:image:height" content={String(OG_HEIGHT)} />
+    <meta name="twitter:image" content={ogImageUrl} />
+  </>
+)}
+
+<meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content={title} />
 <meta name="twitter:description" content={description} />
 

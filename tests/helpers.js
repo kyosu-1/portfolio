@@ -8,6 +8,11 @@ export function readDist(relPath) {
   return readFile(path.join(DIST, relPath), 'utf8');
 }
 
+/** dist 配下のファイルをバイナリ（Buffer）として読む。画像の検証用 */
+export function readDistBinary(relPath) {
+  return readFile(path.join(DIST, relPath));
+}
+
 /**
  * <meta> の content を取り出す。属性の並び順は Astro の出力に依存するため
  * 両方の順序を試す。
