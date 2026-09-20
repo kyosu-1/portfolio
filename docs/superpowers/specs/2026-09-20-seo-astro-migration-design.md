@@ -35,14 +35,16 @@ kyosu.dev が検索結果に出ていない。体感ではなく構造的な原�
 
 - 記事が個別URLでインデックスされ、技術トピックの検索から流入すること（主目的）
 - 「kyosu-1」「Shota Abe」での検索でポートフォリオが出ること（副目的）
-- トップページに経歴・学歴を掲載し、人物としての同定に足る情報量を持たせること
+- ~~トップページに経歴・学歴を掲載し、人物としての同定に足る情報量を持たせること~~
+  **[2026-09-20 追記] 経歴の `/about/` 分離により、この行は事実と異なる。** 経歴・学歴は `/about/` に掲載する。トップは氏名・ハンドル・headline・GitHub/LinkedIn（Hero）で人物としての同定に足る情報量を持たせ、経歴の詳細は `/about/` が担う。
 
 ## 非ゴール
 
 - デザインの変更。見た目は現状を 1:1 で維持する
 - タグ別一覧ページの追加。記事2本の現状では中身の薄いページの量産になり、評価上むしろマイナスに働きうる。記事が増えてから再検討する
 - 記事ごとの OG 画像自動生成。後から独立して足せる
-- `/about` の独立ページ。経歴はトップページ内に置く。ルートに情報を集約したほうが名前検索に効き、記事2本の規模でページを分けると評価が分散する
+- ~~`/about` の独立ページ。経歴はトップページ内に置く。ルートに情報を集約したほうが名前検索に効き、記事2本の規模でページを分けると評価が分散する~~
+  **[2026-09-20 追記] この方針はユーザーの判断で反転した。** 当初はここに書いたとおり `/about` を作らない前提で本設計・実装を進めたが、「経歴は別ページにしたい。Blog を中心としたい」という方針変更があり、経歴・学歴セクションをトップページから `/about/` へ分離した。トップは Hero（氏名・headline・GitHub/LinkedIn）と Blog 一覧のみになり、Header に `Blog` / `About` の2リンクを持つ。詳細は「トップページの構成とプロフィール」節と「構造化データ」節の追記を参照。
 - メールアドレスの掲載。スパム収集の対象になるため、連絡手段は GitHub と LinkedIn に限る
 - スキル一覧。LinkedIn が自動算出した Python / Terraform / OIDC はブログの内容（Go・AWS・ISUCON）と整合しないため載せない
 
@@ -100,6 +102,8 @@ Markdown 処理は Astro Content Collections、シンタックスハイライト
     ├── CNAME
     └── favicon.ico
 ```
+
+**[2026-09-20 追記] `src/pages/about.astro`（`/about/`）を追加した。** 経歴の `/about/` 分離に伴う新規ページで、上記ディレクトリ構成には含まれていない。`src/pages/` は `index.astro` / `about.astro` / `blog/[id].astro` / `rss.xml.ts` / `robots.txt.ts` / `404.astro` の6種になる。
 
 ### astro.config.mjs
 
@@ -192,6 +196,8 @@ const { Content } = await render(post);
 - `<link rel="alternate" type="application/rss+xml" href="/rss.xml">`
 - **JSON-LD**（下記）
 
+**[2026-09-20 追記] `noindex` が true のページでは `canonical` と `og:url` を出さない。** `dist/404.html` のように canonical の宛先URL（`/404/`）が実際には生成されないページに canonical を出すのは有害なため。
+
 `og:image` は未決事項（後述）。画像を持たない間は `twitter:card` を `summary` にし、画像が入った時点で `summary_large_image` に切り替える。
 
 ### 構造化データ (JSON-LD)
@@ -215,9 +221,21 @@ const { Content } = await render(post);
 }
 ```
 
-`worksFor` と `alumniOf` は `src/data/profile.ts` から導出する（`worksFor` は継続中の職歴の先頭、`alumniOf` は最終学歴）。`jobTitle` は Hero の表示テキスト「ソフトウェアエンジニア。」と揃えて `Software Engineer` とし、メルカリでの職種 `Site Reliability Engineer` は Experience セクション側で表示する。
+`worksFor` と `alumniOf` は `src/data/profile.ts` から導出する（`worksFor` は継続中かつ正社員の職歴、`alumniOf` は最終学歴。選び方の詳細は下記「プロフィールデータ」節の `primaryRole()` を参照）。`jobTitle` は Hero の表示テキスト「ソフトウェアエンジニア。」と揃えて `Software Engineer` とし、メルカリでの職種 `Site Reliability Engineer` は Experience セクション側で表示する。
 
 記事 — `BlogPosting`（`headline` / `description` / `datePublished` / `keywords` / `author` は上記 Person への参照 / `mainEntityOfPage`）。
+
+**[2026-09-20 追記] 経歴の `/about/` 分離に伴い、上記の `Person` は分割した。** 「構造化データは可視コンテンツと一致させる」という本設計の原則をそのまま適用すると、Experience/Education がトップから消えた時点でトップの `Person` から `worksFor` / `alumniOf` を落とす必要があるため。
+
+- `personSchema(site)` — トップ用の軽量版。`name` / `alternateName` / `url` / `jobTitle` / `sameAs` のみ。`@id`（`{site}#person`）を持ち、ページを跨いで同一人物であることを示す
+- `fullPersonSchema(site)` — `/about/` 用。`personSchema` の全項目に `worksFor`（`primaryRole()`）と `alumniOf`（`latestEducation().school`）を加えたもの。`worksFor` は「継続中かつ正社員」で選ぶ。ナガセ（業務委託）も継続中のため、開始日順に頼ると並びを変えた瞬間に `worksFor` が変わってしまう
+- `profilePageSchema(site, url)` — `/about/` の `ProfilePage`。`mainEntity` は `{ "@id": "{site}#person" }` という参照のみで、`fullPersonSchema` をここに入れ子にしない（`@context` の二重化を避けるため）。2つの独立した JSON-LD ブロックとして出力し、`@id` で結びつく
+
+| ページ | ブロック |
+|---|---|
+| `/` | `WebSite` + `Person`（軽量、`@id` 付き） |
+| `/about/` | `ProfilePage`（`mainEntity` は `@id` 参照）+ `Person`（完全版、`@id` 付き） |
+| `/blog/{id}/` | `BlogPosting`（変更なし） |
 
 ### トップページの構成とプロフィール
 
@@ -231,6 +249,15 @@ Blog        記事一覧（現行のまま）
 ```
 
 Hero の見出しを `Hi, I'm Shota Abe (kyosu-1)` に変更し、JSON-LD の `Person.name` / `alternateName` と一致させる。既存のスタイル（`max-w-2xl` / グレー基調 / accent `#4a6cf7`）はそのまま使い、Experience / Education は Blog 見出しと同じ `text-lg font-semibold` のセクション見出しで揃える。
+
+**[2026-09-20 追記] 上記はこの設計時点の構成であり、その後 Experience / Education を `/about/` に分離した。** 現在の構成は次のとおり。
+
+```
+/           Hero（Hi, I'm Shota Abe (kyosu-1) / headline / GitHub · LinkedIn）+ Blog 記事一覧
+/about/     About Me / Shota Abe (kyosu-1) の1行 + Experience（雇用形態バッジ付き）+ Education
+```
+
+Header は `kyosu.dev`（→ `/`）/ `Blog`（→ `/`）/ `About`（→ `/about/`）の3リンクになる。Experience の役職行には雇用形態（正社員 / 業務委託）のバッジをインラインで添える。`TagBadge` の accent 青とは別のグレートーン（`bg-gray-100 text-gray-500`）を使い、タグと雇用形態を見分けられるようにしている。
 
 ### プロフィールデータ (`src/data/profile.ts`)
 
@@ -252,14 +279,28 @@ export interface Education {
 }
 ```
 
+**[2026-09-20 追記] 雇用形態を追加した。** `/about/` で職歴に雇用形態バッジを出すため、`Experience` に `employment: '正社員' | '業務委託'` を追加した。値は次表のとおり（推測ではなく本人からの明示による）。
+
+```ts
+export interface Experience {
+  company: string;
+  role: string;
+  employment: '正社員' | '業務委託';
+  start: string;        // "2026-04"
+  end: string | null;   // null = 継続中
+}
+```
+
 掲載する職歴（LinkedIn エクスポートのうち、短期インターン2件——メルカリ 2025/03–2025/04、サイバーエージェント 2023/10——を除外）:
 
-| 会社 | 役割 | 期間 |
-|---|---|---|
-| Mercari, Inc. | Site Reliability Engineer | 2026/04 – 現在 |
-| 株式会社ナガセ | Software Developer | 2020/08 – 現在 |
-| Alumnote | Software Developer | 2024/03 – 2025/11 |
-| ポケットサイン株式会社 | Software Developer | 2024/06 – 2025/06 |
+| 会社 | 役割 | 雇用形態 | 期間 |
+|---|---|---|---|
+| Mercari, Inc. | Site Reliability Engineer | 正社員 | 2026/04 – 現在 |
+| 株式会社ナガセ | Software Developer | 業務委託 | 2020/08 – 現在 |
+| Alumnote | Software Developer | 業務委託 | 2024/03 – 2025/11 |
+| ポケットサイン株式会社 | Software Developer | 業務委託 | 2024/06 – 2025/06 |
+
+**`worksFor` の選び方（`primaryRole()`）**: 構造化データの `worksFor` は「継続中かつ正社員」の職歴を選ぶ。単純に `end === null` な職歴を開始日順（旧 `currentRole()` の選び方）で選ばないのは、ナガセ（業務委託・2020/08〜継続中）も継続中のため、日付順に頼ると `experiences` 配列の並びを変えた瞬間に `worksFor` が変わってしまうから。雇用形態という意味的に安定した基準で選ぶことで、並び順の変更に影響されない。
 
 学歴:
 
@@ -320,13 +361,17 @@ export interface Education {
 「デプロイしたら検索に出るはず」では終わらせない。`npm run build` 後に `dist/` に対して以下を確認する。
 
 1. **本文の実在** — `dist/blog/private-isu-with-claude-code/index.html` に記事本文の一節が含まれること（grep）。初期HTMLに本文が入ることが移行の本質なので、これが通らなければ他は無意味
-2. **メタ情報** — 各ページの `<title>` が固有であること、`<meta name="description">` / `<link rel="canonical">` / `og:url` が正しい絶対URLで存在すること
-3. **構造化データ** — トップに `Person`、記事に `BlogPosting` の JSON-LD が含まれること。`Person` の `name` / `worksFor` / `alumniOf` が Experience セクションの表示内容と一致すること。Google の Rich Results Test でも確認する
-4. **プロフィール** — `dist/index.html` に `Shota Abe` と職歴4社名が実テキストとして含まれること。除外分の判定は社名ではなく日付で行う（`Mercari` は現職として正しく出現するため）: `2023/10`・`2025/03`・`サイバーエージェント`・`sho013039` のいずれも含まれ**ない**こと
+2. ~~**メタ情報** — 各ページの `<title>` が固有であること、`<meta name="description">` / `<link rel="canonical">` / `og:url` が正しい絶対URLで存在すること~~
+   **[2026-09-20 追記]** `<title>` / `<meta name="description">` の固有性はすべてのページに当てはまるが、`<link rel="canonical">` / `og:url` は `noindex` を出すページ（`404.html` など、canonical の宛先URLが存在しないページ）には**出さない**。この2つの「存在すること」の確認対象は indexable なページ（トップ・記事・`/about/`）に限る
+3. ~~**構造化データ** — トップに `Person`、記事に `BlogPosting` の JSON-LD が含まれること。`Person` の `name` / `worksFor` / `alumniOf` が Experience セクションの表示内容と一致すること。Google の Rich Results Test でも確認する~~
+   **[2026-09-20 追記]** トップの `Person`（`personSchema()`）はもはや `worksFor` / `alumniOf` を持たない軽量版。`worksFor` / `alumniOf` は `/about/` の `Person`（完全版、`fullPersonSchema()`）が持ち、`/about/` の Experience セクションの表示内容と一致することを確認する。トップと `/about/` の `Person` は `@id` で同一エンティティとして結びく。Google の Rich Results Test での確認は両ページに対して行う
+4. ~~**プロフィール** — `dist/index.html` に `Shota Abe` と職歴4社名が実テキストとして含まれること。除外分の判定は社名ではなく日付で行う（`Mercari` は現職として正しく出現するため）: `2023/10`・`2025/03`・`サイバーエージェント`・`sho013039` のいずれも含まれ**ない**こと~~
+   **[2026-09-20 追記]** `Shota Abe` は `dist/index.html` と `dist/about/index.html` の両方に含まれる。職歴4社名は `dist/about/index.html` にのみ含まれ、`dist/index.html` には**含まれない**こと（移設漏れの回帰チェック）。除外分・連絡先の判定方法（社名ではなく日付で行う、`sho013039` を含めない）自体は変わらず、確認対象が `dist/about/index.html` に移る
 5. **sitemap** — `dist/sitemap-0.xml` にトップと全記事URLが列挙されていること
 6. **robots.txt** — `Sitemap: https://kyosu.dev/sitemap-index.xml` を含むこと
 7. **JS 配信量** — `dist/` に React のバンドルが残っていないこと
-8. **見た目** — `npm run preview` で現行サイトと並べ、**意図した変更（Hero の氏名、Experience / Education セクションの追加）以外に差分がないこと**。記事ページは完全に一致するはずなので、コードブロックの配色を特に確認する
+8. ~~**見た目** — `npm run preview` で現行サイトと並べ、**意図した変更（Hero の氏名、Experience / Education セクションの追加）以外に差分がないこと**。記事ページは完全に一致するはずなので、コードブロックの配色を特に確認する~~
+   **[2026-09-20 追記]** 「意図した変更」はその後増えている。Experience / Education は `/about/` へ移動し（トップからは消えた）、雇用形態バッジ、Header の `About` リンク、トップの `description` 文言変更が加わった。現時点で「意図した変更」に含まれるのはこれらすべて
 
 ## コード外の手順（デプロイ後に実施）
 

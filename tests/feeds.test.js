@@ -2,11 +2,12 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readDist } from './helpers.js';
 
-test('sitemap にトップと全記事が載る', async () => {
+test('sitemap にトップと全記事と /about/ が載る', async () => {
   const xml = await readDist('sitemap-0.xml');
   assert.match(xml, /<loc>https:\/\/kyosu\.dev\/<\/loc>/);
   assert.match(xml, /<loc>https:\/\/kyosu\.dev\/blog\/introducing-batcha\/<\/loc>/);
   assert.match(xml, /<loc>https:\/\/kyosu\.dev\/blog\/private-isu-with-claude-code\/<\/loc>/);
+  assert.match(xml, /<loc>https:\/\/kyosu\.dev\/about\/<\/loc>/);
 });
 
 test('sitemap-index が生成される', async () => {
@@ -40,4 +41,10 @@ test('404 ページが生成される', async () => {
 test('404 ページに noindex が出る（canonical が存在しないURLを自己参照するため）', async () => {
   const html = await readDist('404.html');
   assert.match(html, /<meta name="robots" content="noindex"/);
+});
+
+test('404 ページに canonical と og:url が出ない（宛先の /404/ というURLは存在しないため）', async () => {
+  const html = await readDist('404.html');
+  assert.doesNotMatch(html, /<link rel="canonical"/);
+  assert.doesNotMatch(html, /property="og:url"/);
 });

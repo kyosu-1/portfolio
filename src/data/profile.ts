@@ -12,6 +12,7 @@ export const author = {
 export interface Experience {
   company: string;
   role: string;
+  employment: '正社員' | '業務委託';
   /** "YYYY-MM" */
   start: string;
   /** "YYYY-MM"。null は継続中 */
@@ -31,10 +32,10 @@ export interface Education {
  * サイバーエージェント 2023-10）は意図的に含めていない。
  */
 export const experiences: Experience[] = [
-  { company: 'Mercari, Inc.', role: 'Site Reliability Engineer', start: '2026-04', end: null },
-  { company: '株式会社ナガセ', role: 'Software Developer', start: '2020-08', end: null },
-  { company: 'Alumnote', role: 'Software Developer', start: '2024-03', end: '2025-11' },
-  { company: 'ポケットサイン株式会社', role: 'Software Developer', start: '2024-06', end: '2025-06' },
+  { company: 'Mercari, Inc.', role: 'Site Reliability Engineer', employment: '正社員', start: '2026-04', end: null },
+  { company: '株式会社ナガセ', role: 'Software Developer', employment: '業務委託', start: '2020-08', end: null },
+  { company: 'Alumnote', role: 'Software Developer', employment: '業務委託', start: '2024-03', end: '2025-11' },
+  { company: 'ポケットサイン株式会社', role: 'Software Developer', employment: '業務委託', start: '2024-06', end: '2025-06' },
 ];
 
 /** 新しい順 */
@@ -69,9 +70,13 @@ export function sortExperiences(items: Experience[]): Experience[] {
   return [...ongoing, ...finished];
 }
 
-/** 構造化データの worksFor に使う現職 */
-export function currentRole(): Experience | undefined {
-  return sortExperiences(experiences).find((e) => e.end === null);
+/**
+ * 構造化データの worksFor に使う本職。継続中かつ正社員のもの。
+ * 開始日順ではなく雇用形態で選ぶ。ナガセ（業務委託）も継続中のため、
+ * 日付順に頼ると並びを変えた瞬間に worksFor が変わってしまう。
+ */
+export function primaryRole(): Experience | undefined {
+  return experiences.find((e) => e.end === null && e.employment === '正社員');
 }
 
 /**

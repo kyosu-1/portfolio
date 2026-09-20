@@ -1,0 +1,63 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { author, education, experiences, sortExperiences } from '../data/profile';
+import { formatYearMonth } from '../lib/date';
+import { fullPersonSchema, profilePageSchema } from '../lib/structured-data';
+import { canonicalUrl } from '../lib/url';
+
+const career = sortExperiences(experiences);
+
+const site = Astro.site!;
+const canonical = canonicalUrl(Astro.url.pathname, site);
+const schemas = [profilePageSchema(site, canonical), fullPersonSchema(site)];
+---
+
+<Layout
+  title="Shota Abe (kyosu-1) | kyosu.dev"
+  description="Shota Abe (kyosu-1) の経歴と学歴。"
+  schemas={schemas}
+>
+  <section class="py-8">
+    <h1 class="text-2xl font-bold text-gray-800">About Me</h1>
+    <p class="mt-2 text-gray-500">{author.name} ({author.handle})</p>
+  </section>
+
+  <section class="py-4">
+    <h2 class="text-lg font-semibold text-gray-800">Experience</h2>
+    <div class="mt-4 flex flex-col gap-4">
+      {career.map((job) => (
+        <div>
+          <p class="font-medium text-gray-800">{job.company}</p>
+          <p class="text-sm text-gray-500">
+            {job.role}
+            <span class="ml-2 inline-block rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-500">
+              {job.employment}
+            </span>
+          </p>
+          <p class="text-sm text-gray-400">
+            <time datetime={job.start}>{formatYearMonth(job.start)}</time>
+            {' – '}
+            {job.end ? <time datetime={job.end}>{formatYearMonth(job.end)}</time> : '現在'}
+          </p>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section class="py-4">
+    <h2 class="text-lg font-semibold text-gray-800">Education</h2>
+    <div class="mt-4 flex flex-col gap-4">
+      {education.map((school) => (
+        <div>
+          <p class="font-medium text-gray-800">{school.school} {school.department}</p>
+          <p class="text-sm text-gray-500">{school.degree}</p>
+          <p class="text-sm text-gray-400">
+            <time datetime={school.start}>{formatYearMonth(school.start)}</time>
+            {' – '}
+            <time datetime={school.end}>{formatYearMonth(school.end)}</time>
+          </p>
+        </div>
+      ))}
+    </div>
+  </section>
+</Layout>

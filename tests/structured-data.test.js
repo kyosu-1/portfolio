@@ -1,23 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
-import path from 'node:path';
 import { readDist, jsonLdBlocks } from './helpers.js';
-
-/**
- * `src/data/profile.ts` の `education` エントリを (school, degree) の組として
- * 素朴にテキストから抜き出す。プレーンな node --test は TypeScript を
- * 実行できないため import できず、ここでは配列順に依存しない検証を行うために
- * テキストとして読む（実行はしない）。
- */
-async function educationEntriesFromSource() {
-  const src = await readFile(
-    path.resolve(import.meta.dirname, '..', 'src', 'data', 'profile.ts'),
-    'utf8',
-  );
-  const re = /school:\s*'([^']*)',\s*department:\s*'[^']*',\s*degree:\s*'([^']*)',/g;
-  return [...src.matchAll(re)].map((m) => ({ school: m[1], degree: m[2] }));
-}
 
 test('トップに Person と WebSite が出る', async () => {
   const blocks = jsonLdBlocks(await readDist('index.html'));
@@ -26,7 +9,7 @@ test('トップに Person と WebSite が出る', async () => {
   assert.ok(types.includes('WebSite'), `WebSite がない: ${types}`);
 });
 
-test('Person の内容が画面表示と一致する', async () => {
+test('トップの Person の内容が画面表示と一致する（軽量版）', async () => {
   const html = await readDist('index.html');
   const person = jsonLdBlocks(html).find((b) => b['@type'] === 'Person');
 
@@ -37,20 +20,48 @@ test('Person の内容が画面表示と一致する', async () => {
     'https://github.com/kyosu-1',
     'https://www.linkedin.com/in/shota-abe',
   ]);
+});
 
-  // profile.ts から導出されているので、画面にも同じ文字列があるはず
+test('トップの Person には worksFor / alumniOf が含まれない（Experience/Education は /about/ にしかない）', async () => {
+  const person = jsonLdBlocks(await readDist('index.html')).find((b) => b['@type'] === 'Person');
+  assert.equal(person.worksFor, undefined);
+  assert.equal(person.alumniOf, undefined);
+});
+
+test('/about/ に ProfilePage と Person（完全版）が出る', async () => {
+  const blocks = jsonLdBlocks(await readDist('about/index.html'));
+  const types = blocks.map((b) => b['@type']);
+  assert.ok(types.includes('ProfilePage'), `ProfilePage がない: ${types}`);
+  assert.ok(types.includes('Person'), `Person がない: ${types}`);
+});
+
+test('/about/ の Person に worksFor / alumniOf が画面表示と一致して含まれる', async () => {
+  const html = await readDist('about/index.html');
+  const person = jsonLdBlocks(html).find((b) => b['@type'] === 'Person');
+
   assert.equal(person.worksFor.name, 'Mercari, Inc.');
   assert.ok(html.includes(person.worksFor.name));
   assert.equal(person.alumniOf.name, '東京工業大学');
   assert.ok(html.includes(person.alumniOf.name));
 });
 
-test('alumniOf は education 配列の並び順に依存せず最終学歴（修士）を指す', async () => {
-  const person = jsonLdBlocks(await readDist('index.html')).find((b) => b['@type'] === 'Person');
-  const entries = await educationEntriesFromSource();
-  const master = entries.find((e) => e.degree === '修士');
-  assert.ok(master, 'education に修士のエントリがない');
-  assert.equal(person.alumniOf.name, master.school);
+test('/about/ の ProfilePage.mainEntity は Person の @id を参照する', async () => {
+  const blocks = jsonLdBlocks(await readDist('about/index.html'));
+  const profilePage = blocks.find((b) => b['@type'] === 'ProfilePage');
+  const person = blocks.find((b) => b['@type'] === 'Person');
+
+  assert.ok(profilePage.mainEntity?.['@id'], 'ProfilePage.mainEntity["@id"] がない');
+  assert.equal(profilePage.mainEntity['@id'], person['@id']);
+});
+
+test('トップと /about/ の Person の @id が一致する（同一人物であることを示す）', async () => {
+  const topPerson = jsonLdBlocks(await readDist('index.html')).find((b) => b['@type'] === 'Person');
+  const aboutPerson = jsonLdBlocks(await readDist('about/index.html')).find(
+    (b) => b['@type'] === 'Person',
+  );
+
+  assert.ok(topPerson['@id'], 'トップの Person に @id がない');
+  assert.equal(topPerson['@id'], aboutPerson['@id']);
 });
 
 test('記事に BlogPosting が出る', async () => {
