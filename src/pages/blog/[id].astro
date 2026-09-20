@@ -4,6 +4,7 @@ import Layout from '../../layouts/Layout.astro';
 import TagBadge from '../../components/TagBadge.astro';
 import { formatPostDate } from '../../lib/date';
 import { blogPostingSchema } from '../../lib/structured-data';
+import { canonicalUrl } from '../../lib/url';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog');
@@ -15,7 +16,7 @@ const { Content } = await render(post);
 const displayDate = formatPostDate(post.data.date);
 
 const site = Astro.site!;
-const canonical = new URL(Astro.url.pathname, site).href;
+const canonical = canonicalUrl(Astro.url.pathname, site);
 const schemas = [
   blogPostingSchema({
     site,

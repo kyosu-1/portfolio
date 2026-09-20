@@ -44,3 +44,12 @@ test('記事ページに Person は出さない', async () => {
   const blocks = jsonLdBlocks(await readDist('blog/introducing-batcha/index.html'));
   assert.equal(blocks.filter((b) => b['@type'] === 'Person').length, 0);
 });
+
+test('canonical link と mainEntityOfPage が同じ URL を指す', async () => {
+  const html = await readDist('blog/introducing-batcha/index.html');
+  const canonical = html.match(/<link rel="canonical" href="([^"]+)"/)?.[1];
+  const posting = jsonLdBlocks(html).find((b) => b['@type'] === 'BlogPosting');
+
+  assert.ok(canonical, 'canonical link が見つからない');
+  assert.equal(posting.mainEntityOfPage['@id'], canonical);
+});
