@@ -6,13 +6,13 @@ export async function getStaticPaths() {
   const pages = await listOgPages();
   return pages.map((page) => ({
     params: { route: page.route },
-    props: { eyebrow: page.eyebrow, headline: page.headline },
+    props: { eyebrow: page.eyebrow, headline: page.headline, subline: page.subline },
   }));
 }
 
 export const GET: APIRoute = async ({ props }) => {
-  const { eyebrow, headline } = props as Pick<OgPage, 'eyebrow' | 'headline'>;
-  const png = await renderOgImage({ eyebrow, headline });
+  const { eyebrow, headline, subline } = props as Pick<OgPage, 'eyebrow' | 'headline' | 'subline'>;
+  const png = await renderOgImage({ eyebrow, headline, subline });
 
   return new Response(png, {
     headers: { 'Content-Type': 'image/png' },

@@ -1,10 +1,8 @@
 import satori from 'satori';
 import { Resvg } from '@resvg/resvg-js';
 import { loadOgFonts } from './font';
-import { OG_FOOTER_TEXT } from './constants';
-
-export const OG_WIDTH = 1200;
-export const OG_HEIGHT = 630;
+import { OG_FOOTER_TEXT, OG_WIDTH, OG_HEIGHT } from './constants';
+import { headlineClampStyle } from './headline-style.mjs';
 
 // サイトの --color-accent (src/styles/global.css) と揃える
 const ACCENT_COLOR = '#4a6cf7';
@@ -14,6 +12,8 @@ const FOOTER_COLOR = '#9ca3af';
 export interface RenderOgImageOptions {
   eyebrow?: string;
   headline: string;
+  /** headline の下・footer の上に出す一行紹介。今のところトップのみ */
+  subline?: string;
 }
 
 /**
@@ -32,7 +32,7 @@ function headlineFontSize(headline: string): number {
 // いないため any で受ける。
 type SatoriNode = any;
 
-function buildElement({ eyebrow, headline }: RenderOgImageOptions): SatoriNode {
+function buildElement({ eyebrow, headline, subline }: RenderOgImageOptions): SatoriNode {
   const fontSize = headlineFontSize(headline);
 
   // eyebrow が無いページ（トップ）でも headline の縦位置が揃うよう、
@@ -88,23 +88,26 @@ function buildElement({ eyebrow, headline }: RenderOgImageOptions): SatoriNode {
               {
                 type: 'div',
                 props: {
-                  style: {
-                    // 3行を超える分は省略記号で切る。satori では
-                    // textOverflow: 'ellipsis' を欠くと clamp が
-                    // 効かず素通しで溢れるため、必ず一緒に指定する。
-                    display: '-webkit-box',
-                    WebkitBoxOrient: 'vertical',
-                    WebkitLineClamp: 3,
-                    textOverflow: 'ellipsis',
-                    overflow: 'hidden',
-                    fontSize: `${fontSize}px`,
-                    fontWeight: 700,
-                    lineHeight: 1.3,
-                    color: HEADLINE_COLOR,
-                  },
+                  style: headlineClampStyle({ fontSize, color: HEADLINE_COLOR }),
                   children: headline,
                 },
               },
+              ...(subline
+                ? [
+                    {
+                      type: 'div',
+                      props: {
+                        style: {
+                          display: 'flex',
+                          fontSize: '32px',
+                          fontWeight: 400,
+                          color: FOOTER_COLOR,
+                        },
+                        children: subline,
+                      },
+                    },
+                  ]
+                : []),
               {
                 type: 'div',
                 props: {

@@ -7,6 +7,8 @@ export interface OgPage {
   /** タグなどの小さい見出し。無いページ（トップ）もある */
   eyebrow?: string;
   headline: string;
+  /** headline の下に出す一行紹介。今のところトップのみ */
+  subline?: string;
 }
 
 const HOME_HEADLINE = `${author.name} (${author.handle})`;
@@ -22,7 +24,10 @@ export async function listOgPages(): Promise<OgPage[]> {
   const posts = await getCollection('blog');
 
   return [
-    { route: 'home', headline: HOME_HEADLINE },
+    // 画面の Hero（src/pages/index.astro）と同じく author.headline を
+    // そのまま使う。ここで新しい文言を書くと画面とカードの内容が
+    // ずれるおそれがあるため
+    { route: 'home', headline: HOME_HEADLINE, subline: author.headline },
     { route: 'about', eyebrow: 'About', headline: HOME_HEADLINE },
     ...posts.map((post) => ({
       route: `blog/${post.id}`,

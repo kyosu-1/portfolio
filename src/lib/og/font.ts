@@ -66,6 +66,9 @@ async function collectRequiredText(): Promise<string> {
     if (page.eyebrow) {
       for (const ch of page.eyebrow) chars.add(ch);
     }
+    if (page.subline) {
+      for (const ch of page.subline) chars.add(ch);
+    }
   }
 
   return [...chars].join('');
