@@ -35,12 +35,16 @@ kyosu.dev が検索結果に出ていない。体感ではなく構造的な原�
 
 - 記事が個別URLでインデックスされ、技術トピックの検索から流入すること（主目的）
 - 「kyosu-1」「Shota Abe」での検索でポートフォリオが出ること（副目的）
+- トップページに経歴・学歴を掲載し、人物としての同定に足る情報量を持たせること
 
 ## 非ゴール
 
 - デザインの変更。見た目は現状を 1:1 で維持する
 - タグ別一覧ページの追加。記事2本の現状では中身の薄いページの量産になり、評価上むしろマイナスに働きうる。記事が増えてから再検討する
 - 記事ごとの OG 画像自動生成。後から独立して足せる
+- `/about` の独立ページ。経歴はトップページ内に置く。ルートに情報を集約したほうが名前検索に効き、記事2本の規模でページを分けると評価が分散する
+- メールアドレスの掲載。スパム収集の対象になるため、連絡手段は GitHub と LinkedIn に限る
+- スキル一覧。LinkedIn が自動算出した Python / Terraform / OIDC はブログの内容（Go・AWS・ISUCON）と整合しないため載せない
 
 ## 採用する方針
 
@@ -72,6 +76,8 @@ Markdown 処理は Astro Content Collections、シンタックスハイライト
 ├── tsconfig.json                 # Astro のベース設定に差し替え
 ├── src/
 │   ├── content.config.ts
+│   ├── data/
+│   │   └── profile.ts            # 経歴・学歴。表示と JSON-LD の単一ソース
 │   ├── components/
 │   │   ├── BaseHead.astro        # SEO の中核。全ページがこれを通る
 │   │   ├── Header.astro
@@ -200,6 +206,8 @@ const { Content } = await render(post);
   "alternateName": "kyosu-1",
   "url": "https://kyosu.dev",
   "jobTitle": "Software Engineer",
+  "worksFor": { "@type": "Organization", "name": "Mercari, Inc." },
+  "alumniOf": { "@type": "CollegeOrUniversity", "name": "東京工業大学" },
   "sameAs": [
     "https://github.com/kyosu-1",
     "https://www.linkedin.com/in/shota-abe"
@@ -207,11 +215,64 @@ const { Content } = await render(post);
 }
 ```
 
+`worksFor` と `alumniOf` は `src/data/profile.ts` から導出する（`worksFor` は継続中の職歴の先頭、`alumniOf` は最終学歴）。`jobTitle` は Hero の表示テキスト「ソフトウェアエンジニア。」と揃えて `Software Engineer` とし、メルカリでの職種 `Site Reliability Engineer` は Experience セクション側で表示する。
+
 記事 — `BlogPosting`（`headline` / `description` / `datePublished` / `keywords` / `author` は上記 Person への参照 / `mainEntityOfPage`）。
 
-### トップページの氏名表記
+### トップページの構成とプロフィール
 
-名前検索でヒットさせるには、その名前がページ上に存在している必要がある。現状の見出しは `Hi, I'm kyosu-1` のみで本名がない。これを **`Hi, I'm Shota Abe (kyosu-1)`** に変更し、JSON-LD の `Person.name` と一致させる。これが本設計における唯一の表示テキスト変更。
+名前検索でヒットさせるには、その名前がページ上に存在している必要がある。現状の見出しは `Hi, I'm kyosu-1` のみで本名がなく、ページ全体の実テキストもごくわずか。以下の構成にする。
+
+```
+Hero        Hi, I'm Shota Abe (kyosu-1) / ソフトウェアエンジニア。/ GitHub · LinkedIn
+Experience  職歴4件
+Education   学歴
+Blog        記事一覧（現行のまま）
+```
+
+Hero の見出しを `Hi, I'm Shota Abe (kyosu-1)` に変更し、JSON-LD の `Person.name` / `alternateName` と一致させる。既存のスタイル（`max-w-2xl` / グレー基調 / accent `#4a6cf7`）はそのまま使い、Experience / Education は Blog 見出しと同じ `text-lg font-semibold` のセクション見出しで揃える。
+
+### プロフィールデータ (`src/data/profile.ts`)
+
+経歴は表示用マークアップと JSON-LD の両方から参照される。同じ内容を2箇所に書くと必ず片方が古くなるため、単一の型付きデータとして切り出し、双方がそこから読む。
+
+```ts
+export interface Experience {
+  company: string;
+  role: string;
+  start: string;        // "2026-04"
+  end: string | null;   // null = 継続中
+}
+
+export interface Education {
+  school: string;
+  degree: string;
+  start: string;
+  end: string;
+}
+```
+
+掲載する職歴（LinkedIn エクスポートのうち、短期インターン2件——メルカリ 2025/03–2025/04、サイバーエージェント 2023/10——を除外）:
+
+| 会社 | 役割 | 期間 |
+|---|---|---|
+| Mercari, Inc. | Site Reliability Engineer | 2026/04 – 現在 |
+| 株式会社ナガセ | Software Developer | 2020/08 – 現在 |
+| Alumnote | Software Developer | 2024/03 – 2025/11 |
+| ポケットサイン株式会社 | Software Developer | 2024/06 – 2025/06 |
+
+学歴:
+
+| 学校 | 学位 | 期間 |
+|---|---|---|
+| 東京工業大学 情報理工学院 数理・計算科学系 | 修士 | 2024/04 – 2026/03 |
+| 東京工業大学 情報理工学院 数理・計算科学系 | 学士 | 2020/04 – 2024/03 |
+
+**並び順**: 継続中（`end === null`）を先に `start` 降順、続いて終了済みを `end` 降順。単純な `start` 降順だと6年続いているナガセが末尾に沈むため。結果は上表のとおりで、LinkedIn 上の並びとも一致する。
+
+**日付の表示**: `YYYY/MM`、継続中は `現在`。`<time datetime="2026-04">` を併記する。
+
+**大学名について**: 東京工業大学は2024年10月に東京科学大学へ統合されており、修士課程（2024/04–2026/03）は統合をまたぐ。本設計では提供された LinkedIn エクスポートの記載（Tokyo Tech）に従い「東京工業大学」と表記する。
 
 ### 生成される成果物
 
@@ -260,11 +321,12 @@ const { Content } = await render(post);
 
 1. **本文の実在** — `dist/blog/private-isu-with-claude-code/index.html` に記事本文の一節が含まれること（grep）。初期HTMLに本文が入ることが移行の本質なので、これが通らなければ他は無意味
 2. **メタ情報** — 各ページの `<title>` が固有であること、`<meta name="description">` / `<link rel="canonical">` / `og:url` が正しい絶対URLで存在すること
-3. **構造化データ** — トップに `Person`、記事に `BlogPosting` の JSON-LD が含まれること。Google の Rich Results Test でも確認する
-4. **sitemap** — `dist/sitemap-0.xml` にトップと全記事URLが列挙されていること
-5. **robots.txt** — `Sitemap: https://kyosu.dev/sitemap-index.xml` を含むこと
-6. **JS 配信量** — `dist/` に React のバンドルが残っていないこと
-7. **見た目** — `npm run preview` で現行サイトと並べて差分がないこと（ハイライトの配色を特に確認）
+3. **構造化データ** — トップに `Person`、記事に `BlogPosting` の JSON-LD が含まれること。`Person` の `name` / `worksFor` / `alumniOf` が Experience セクションの表示内容と一致すること。Google の Rich Results Test でも確認する
+4. **プロフィール** — `dist/index.html` に `Shota Abe` と職歴4社名が実テキストとして含まれること。除外分の判定は社名ではなく日付で行う（`Mercari` は現職として正しく出現するため）: `2023/10`・`2025/03`・`サイバーエージェント`・`sho013039` のいずれも含まれ**ない**こと
+5. **sitemap** — `dist/sitemap-0.xml` にトップと全記事URLが列挙されていること
+6. **robots.txt** — `Sitemap: https://kyosu.dev/sitemap-index.xml` を含むこと
+7. **JS 配信量** — `dist/` に React のバンドルが残っていないこと
+8. **見た目** — `npm run preview` で現行サイトと並べ、**意図した変更（Hero の氏名、Experience / Education セクションの追加）以外に差分がないこと**。記事ページは完全に一致するはずなので、コードブロックの配色を特に確認する
 
 ## コード外の手順（デプロイ後に実施）
 
