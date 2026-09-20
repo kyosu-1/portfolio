@@ -1611,7 +1611,31 @@ Expected: FAIL。リダイレクトスクリプトがまだ無い。
 Run: `npm test`
 Expected: PASS（合計34件）
 
-- [ ] **Step 5: README を更新する**
+- [ ] **Step 5: 記事一覧の空状態フォールバックを復元する**
+
+移行前の `src/pages/Home.tsx` には記事が0件のときの表示があったが、Task 3 の実装（およびこの計画の Task 3 Step 8 のコード）がこれを落としていた。「表示テキストは移行前と一致させる」制約に反するため復元する。
+
+`src/pages/index.astro` の Blog セクションの `{posts.map(...)}` を次の形に戻す。
+
+```astro
+      {posts.length > 0 ? (
+        posts.map((post) => (
+          <BlogCard
+            id={post.id}
+            title={post.data.title}
+            date={post.data.date}
+            tags={post.data.tags}
+            summary={post.data.summary}
+          />
+        ))
+      ) : (
+        <p class="text-sm text-gray-400">記事はまだありません。</p>
+      )}
+```
+
+`posts/` が空になることは現状ないため自動テストは追加しない（空のコレクションを作るにはリポジトリの記事を退避させる必要があり、テストの代償が見合わない）。`npm test` が引き続き10件以上通ることだけ確認する。
+
+- [ ] **Step 6: README を更新する**
 
 `README.md` に対して3点変更する。ネストしたコードフェンスを避けるため、差分で示す。
 
@@ -1637,7 +1661,7 @@ npm test
 ```
 ~~~
 
-- [ ] **Step 6: spec の検証項目を通しで確認する**
+- [ ] **Step 7: spec の検証項目を通しで確認する**
 
 Run:
 
@@ -1658,13 +1682,13 @@ ls dist/blog/*/index.html
 
 Expected: 本文の grep が 1 以上、「JS なし」、メールアドレスとサイバーエージェントはいずれも「なし」、生成物がすべて存在する。
 
-- [ ] **Step 7: 見た目を本番と比較する**
+- [ ] **Step 8: 見た目を本番と比較する**
 
 Run: `npm run preview`
 
 `http://localhost:4321/` と `https://kyosu.dev/` を並べ、**意図した変更（Hero の氏名、Experience / Education の追加）以外に差分がないこと**を確認する。記事ページは完全に一致するはずなので、コードブロックの背景色と等幅フォントを特に見る。
 
-- [ ] **Step 8: コミット**
+- [ ] **Step 9: コミット**
 
 ```bash
 git add -A
