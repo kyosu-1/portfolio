@@ -216,7 +216,7 @@ const { Content } = await render(post);
 }
 ```
 
-`worksFor` と `alumniOf` は `src/data/profile.ts` から導出する（`worksFor` は継続中の職歴の先頭、`alumniOf` は最終学歴）。`jobTitle` は Hero の表示テキスト「ソフトウェアエンジニア。」と揃えて `Software Engineer` とし、メルカリでの職種 `Site Reliability Engineer` は Experience セクション側で表示する。
+`worksFor` と `alumniOf` は `src/data/profile.ts` から導出する（`worksFor` は継続中かつ正社員の職歴、`alumniOf` は最終学歴。選び方の詳細は下記「プロフィールデータ」節の `primaryRole()` を参照）。`jobTitle` は Hero の表示テキスト「ソフトウェアエンジニア。」と揃えて `Software Engineer` とし、メルカリでの職種 `Site Reliability Engineer` は Experience セクション側で表示する。
 
 記事 — `BlogPosting`（`headline` / `description` / `datePublished` / `keywords` / `author` は上記 Person への参照 / `mainEntityOfPage`）。
 
@@ -274,14 +274,28 @@ export interface Education {
 }
 ```
 
+**[2026-09-20 追記] 雇用形態を追加した。** `/about/` で職歴に雇用形態バッジを出すため、`Experience` に `employment: '正社員' | '業務委託'` を追加した。値は次表のとおり（推測ではなく本人からの明示による）。
+
+```ts
+export interface Experience {
+  company: string;
+  role: string;
+  employment: '正社員' | '業務委託';
+  start: string;        // "2026-04"
+  end: string | null;   // null = 継続中
+}
+```
+
 掲載する職歴（LinkedIn エクスポートのうち、短期インターン2件——メルカリ 2025/03–2025/04、サイバーエージェント 2023/10——を除外）:
 
-| 会社 | 役割 | 期間 |
-|---|---|---|
-| Mercari, Inc. | Site Reliability Engineer | 2026/04 – 現在 |
-| 株式会社ナガセ | Software Developer | 2020/08 – 現在 |
-| Alumnote | Software Developer | 2024/03 – 2025/11 |
-| ポケットサイン株式会社 | Software Developer | 2024/06 – 2025/06 |
+| 会社 | 役割 | 雇用形態 | 期間 |
+|---|---|---|---|
+| Mercari, Inc. | Site Reliability Engineer | 正社員 | 2026/04 – 現在 |
+| 株式会社ナガセ | Software Developer | 業務委託 | 2020/08 – 現在 |
+| Alumnote | Software Developer | 業務委託 | 2024/03 – 2025/11 |
+| ポケットサイン株式会社 | Software Developer | 業務委託 | 2024/06 – 2025/06 |
+
+**`worksFor` の選び方（`primaryRole()`）**: 構造化データの `worksFor` は「継続中かつ正社員」の職歴を選ぶ。単純に `end === null` な職歴を開始日順（旧 `currentRole()` の選び方）で選ばないのは、ナガセ（業務委託・2020/08〜継続中）も継続中のため、日付順に頼ると `experiences` 配列の並びを変えた瞬間に `worksFor` が変わってしまうから。雇用形態という意味的に安定した基準で選ぶことで、並び順の変更に影響されない。
 
 学歴:
 

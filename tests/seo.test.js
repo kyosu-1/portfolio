@@ -51,9 +51,16 @@ test('トップの og:title / og:description / og:url が出る', async () => {
   assert.equal(metaContent(home, 'property', 'og:title'), 'kyosu.dev — Shota Abe (kyosu-1)');
   assert.equal(
     metaContent(home, 'property', 'og:description'),
-    'Shota Abe (kyosu-1) のポートフォリオ。ソフトウェアエンジニアとしての経歴と技術ブログ。',
+    'Shota Abe (kyosu-1) のポートフォリオ。ソフトウェアエンジニアが書いた技術記事の一覧です。',
   );
   assert.equal(metaContent(home, 'property', 'og:url'), 'https://kyosu.dev/');
+});
+
+test('トップの description は経歴に言及しない（Experience/Education は /about/ にあるため）', async () => {
+  const home = await readDist('index.html');
+  const desc = metaContent(home, 'name', 'description');
+  assert.ok(desc?.includes('Shota Abe'), `description に氏名が入っていない: ${desc}`);
+  assert.doesNotMatch(desc ?? '', /経歴/, `description が経歴に言及している: ${desc}`);
 });
 
 test('Twitter カードが出る（画像は未設定なので summary）', async () => {
