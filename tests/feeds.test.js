@@ -36,3 +36,8 @@ test('404 ページが生成される', async () => {
   assert.match(html, /404/);
   assert.match(html, /ページが見つかりませんでした/);
 });
+
+test('404 ページに noindex が出る（canonical が存在しないURLを自己参照するため）', async () => {
+  const html = await readDist('404.html');
+  assert.match(html, /<meta name="robots" content="noindex"/);
+});

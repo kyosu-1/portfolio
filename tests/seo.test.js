@@ -5,7 +5,7 @@ import { readDist, metaContent } from './helpers.js';
 test('ページごとに固有の title が出る', async () => {
   const home = await readDist('index.html');
   const post = await readDist('blog/introducing-batcha/index.html');
-  assert.match(home, /<title>kyosu\.dev<\/title>/);
+  assert.match(home, /<title>kyosu\.dev — Shota Abe \(kyosu-1\)<\/title>/);
   assert.match(post, /<title>ecspressoライクなAWS Batchデプロイツール「batcha」を作った \| kyosu\.dev<\/title>/);
 });
 
@@ -34,6 +34,16 @@ test('OG タグが出る', async () => {
 test('トップの og:type は website', async () => {
   const home = await readDist('index.html');
   assert.equal(metaContent(home, 'property', 'og:type'), 'website');
+});
+
+test('トップの og:title / og:description / og:url が出る', async () => {
+  const home = await readDist('index.html');
+  assert.equal(metaContent(home, 'property', 'og:title'), 'kyosu.dev — Shota Abe (kyosu-1)');
+  assert.equal(
+    metaContent(home, 'property', 'og:description'),
+    'Shota Abe (kyosu-1) のポートフォリオ。ソフトウェアエンジニアとしての経歴と技術ブログ。',
+  );
+  assert.equal(metaContent(home, 'property', 'og:url'), 'https://kyosu.dev/');
 });
 
 test('Twitter カードが出る（画像は未設定なので summary）', async () => {

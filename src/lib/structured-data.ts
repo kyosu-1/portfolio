@@ -1,4 +1,4 @@
-import { author, currentRole, education } from '../data/profile';
+import { author, currentRole, latestEducation } from '../data/profile';
 
 export function personSchema(site: URL) {
   const job = currentRole();
@@ -10,7 +10,7 @@ export function personSchema(site: URL) {
     url: site.href,
     jobTitle: author.jobTitle,
     ...(job ? { worksFor: { '@type': 'Organization', name: job.company } } : {}),
-    alumniOf: { '@type': 'CollegeOrUniversity', name: education[0].school },
+    alumniOf: { '@type': 'CollegeOrUniversity', name: latestEducation().school },
     sameAs: [author.links.github, author.links.linkedin],
   };
 }

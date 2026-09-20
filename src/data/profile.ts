@@ -73,3 +73,12 @@ export function sortExperiences(items: Experience[]): Experience[] {
 export function currentRole(): Experience | undefined {
   return sortExperiences(experiences).find((e) => e.end === null);
 }
+
+/**
+ * 構造化データの alumniOf に使う最終学歴。
+ * `education` の並び順（配列の先頭が新しいという運用上のルール）に
+ * 依存せず、`end` の降順で決める。
+ */
+export function latestEducation(): Education {
+  return [...education].sort((a, b) => b.end.localeCompare(a.end))[0];
+}
