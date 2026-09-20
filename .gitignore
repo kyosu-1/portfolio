@@ -3,6 +3,9 @@
 
 # Production
 /dist
+
+# Astro
+.astro/
 tsconfig.tsbuildinfo
 
 # Environment

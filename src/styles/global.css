@@ -1,0 +1,32 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --color-accent: #4a6cf7;
+}
+
+/* Shiki が出力する <pre class="astro-code"> を、移行前
+   （highlight.js GitHub Light）と同じ見た目に揃える。
+   背景色はテーマ由来のインラインスタイルを上書きする必要がある。 */
+.prose pre.astro-code {
+  background-color: #f6f8fa !important;
+  border-radius: 0.5rem;
+  padding: 1.2em 1.4em;
+  overflow-x: auto;
+}
+.prose pre.astro-code code {
+  background: transparent;
+  padding: 0;
+  font-family: var(--font-mono);
+}
+
+/* prose がコードの色を上書きするのを防ぐ（移行前から引き継ぎ） */
+.prose code {
+  color: inherit;
+}
+.prose pre code::before,
+.prose pre code::after {
+  content: none;
+}
