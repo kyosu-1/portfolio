@@ -80,7 +80,7 @@ React のビルドパイプラインを Astro に置き換え、最小のトッ�
 - Consumes: なし（最初のタスク）
 - Produces:
   - `Layout.astro` の Props: `{ title: string; description: string }`。Task 5 で `type` / `publishedDate` / `tags` / `schemas` が追加される
-  - `tests/helpers.js`: `readDist(relPath: string): Promise<string>`, `metaContent(html: string, attr: string, value: string): string | null`, `jsonLdBlocks(html: string): object[]`
+  - `tests/helpers.js`: `readDist(relPath: string): Promise<string>`, `metaContent(html: string, attr: string, value: string): string | null`, `jsonLdBlocks(html: string): object[]`, `plainText(html: string): string`
   - `npm test` = `astro build && node --test tests/`
 
 - [ ] **Step 1: React 系の依存を外し、Astro を入れる**
@@ -158,6 +158,20 @@ export function metaContent(html, attr, value) {
   return m ? m[1] : null;
 }
 
+/**
+ * タグを外した表示テキスト。空白は1つに畳む。
+ * Astro はテンプレートの改行をそのまま出力するため、
+ * 「画面に何と表示されるか」を見たいときは生HTMLではなくこれを使う。
+ */
+export function plainText(html) {
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 /** ページ内の JSON-LD をすべてパースして返す */
 export function jsonLdBlocks(html) {
   const re = /<script type="application\/ld\+json">([\s\S]*?)<\/script>/g;
@@ -221,7 +235,7 @@ export default defineConfig({
 {
   "extends": "astro/tsconfigs/strict",
   "include": [".astro/types.d.ts", "**/*"],
-  "exclude": ["dist"]
+  "exclude": ["dist", "tests"]
 }
 ```
 
@@ -372,7 +386,8 @@ test('記事ページに見出しとタグが出力される', async () => {
   const html = await readDist('blog/introducing-batcha/index.html');
   assert.match(html, /batcha/);
   assert.match(html, /AWS Batch/);
-  assert.match(html, />Go</);
+  // Astro はテンプレートの改行を保つため、>Go< では一致しない
+  assert.match(html, /<span[^>]*>\s*Go\s*<\/span>/);
 });
 
 test('記事の日付が移行前と同じ YYYY-MM-DD 形式で表示される', async () => {
@@ -528,7 +543,7 @@ test('トップページに記事が新しい順で並ぶ', async () => {
 test('記事カードに要約とタグが出る', async () => {
   const html = await readDist('index.html');
   assert.match(html, /AWS Batch Job Definitionを宣言的に管理/);
-  assert.match(html, />ISUCON</);
+  assert.match(html, /<span[^>]*>\s*ISUCON\s*<\/span>/);
 });
 
 test('ヘッダとフッタが全ページに出る', async () => {
@@ -756,7 +771,7 @@ git commit -m "feat: コンポーネントを .astro に移植し記事一覧を
 ```js
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readDist } from './helpers.js';
+import { readDist, plainText } from './helpers.js';
 
 test('氏名とハンドルがトップページに出る', async () => {
   const html = await readDist('index.html');
@@ -790,8 +805,10 @@ test('学歴が出る', async () => {
 });
 
 test('継続中の職歴は「現在」と表示される', async () => {
-  const html = await readDist('index.html');
-  assert.match(html, /2026\/04\s*–\s*現在/);
+  // 生HTMLでは 2026/04 と 現在 の間に </time> と改行が入るため、
+  // 表示テキストに畳んでから判定する
+  const text = plainText(await readDist('index.html'));
+  assert.match(text, /2026\/04 – 現在/);
 });
 
 test('除外したインターンと連絡先が出力に含まれない', async () => {
@@ -1429,10 +1446,12 @@ test('robots.txt が sitemap を指す', async () => {
 
 test('RSS に記事が新しい順で載る', async () => {
   const xml = await readDist('rss.xml');
-  assert.match(xml, /<title>kyosu\.dev<\/title>/);
-  const newer = xml.indexOf('private-isu');
-  const older = xml.indexOf('batcha');
-  assert.ok(newer > -1 && older > -1);
+  // @astrojs/rss が title を CDATA で包むかは版に依存するため、
+  // エスケープの影響を受けない <link> の URL とその並びで判定する
+  assert.match(xml, /<link>https:\/\/kyosu\.dev\/blog\/private-isu-with-claude-code\/<\/link>/);
+  assert.match(xml, /<link>https:\/\/kyosu\.dev\/blog\/introducing-batcha\/<\/link>/);
+  const newer = xml.indexOf('private-isu-with-claude-code');
+  const older = xml.indexOf('introducing-batcha');
   assert.ok(newer < older, 'RSS の並びが新しい順になっていない');
 });
 
@@ -1550,8 +1569,11 @@ import { readDist } from './helpers.js';
 
 test('トップにハッシュURLの引き継ぎスクリプトが入る', async () => {
   const html = await readDist('index.html');
+  // 正規表現リテラルのエスケープ表記に依存しないよう、
+  // スクリプトが使っている API の存在で判定する
+  assert.match(html, /location\.hash/);
   assert.match(html, /location\.replace/);
-  assert.match(html, /#\\\/blog\\\/|#\/blog\//);
+  assert.match(html, /'\/blog\/'/);
 });
 
 test('引き継ぎスクリプト以外に JS を配信しない', async () => {
