@@ -2,14 +2,12 @@
 import { getCollection } from 'astro:content';
 import Layout from '../layouts/Layout.astro';
 import BlogCard from '../components/BlogCard.astro';
-import { author, education, experiences, sortExperiences } from '../data/profile';
-import { formatYearMonth } from '../lib/date';
+import { author } from '../data/profile';
 import { personSchema, websiteSchema } from '../lib/structured-data';
 
 const posts = (await getCollection('blog')).sort(
   (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
 );
-const career = sortExperiences(experiences);
 
 const site = Astro.site!;
 const schemas = [personSchema(site), websiteSchema(site)];
@@ -37,40 +35,6 @@ const schemas = [personSchema(site), websiteSchema(site)];
     <div class="mt-3 flex gap-4">
       <a href={author.links.github} target="_blank" rel="noopener noreferrer" class="text-sm text-gray-400 hover:text-accent">GitHub</a>
       <a href={author.links.linkedin} target="_blank" rel="noopener noreferrer" class="text-sm text-gray-400 hover:text-accent">LinkedIn</a>
-    </div>
-  </section>
-
-  <section class="py-4">
-    <h2 class="text-lg font-semibold text-gray-800">Experience</h2>
-    <div class="mt-4 flex flex-col gap-4">
-      {career.map((job) => (
-        <div>
-          <p class="font-medium text-gray-800">{job.company}</p>
-          <p class="text-sm text-gray-500">{job.role}</p>
-          <p class="text-sm text-gray-400">
-            <time datetime={job.start}>{formatYearMonth(job.start)}</time>
-            {' – '}
-            {job.end ? <time datetime={job.end}>{formatYearMonth(job.end)}</time> : '現在'}
-          </p>
-        </div>
-      ))}
-    </div>
-  </section>
-
-  <section class="py-4">
-    <h2 class="text-lg font-semibold text-gray-800">Education</h2>
-    <div class="mt-4 flex flex-col gap-4">
-      {education.map((school) => (
-        <div>
-          <p class="font-medium text-gray-800">{school.school} {school.department}</p>
-          <p class="text-sm text-gray-500">{school.degree}</p>
-          <p class="text-sm text-gray-400">
-            <time datetime={school.start}>{formatYearMonth(school.start)}</time>
-            {' – '}
-            <time datetime={school.end}>{formatYearMonth(school.end)}</time>
-          </p>
-        </div>
-      ))}
     </div>
   </section>
 

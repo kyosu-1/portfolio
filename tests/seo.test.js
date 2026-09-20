@@ -5,8 +5,16 @@ import { readDist, metaContent } from './helpers.js';
 test('ページごとに固有の title が出る', async () => {
   const home = await readDist('index.html');
   const post = await readDist('blog/introducing-batcha/index.html');
+  const about = await readDist('about/index.html');
   assert.match(home, /<title>kyosu\.dev — Shota Abe \(kyosu-1\)<\/title>/);
   assert.match(post, /<title>ecspressoライクなAWS Batchデプロイツール「batcha」を作った \| kyosu\.dev<\/title>/);
+  assert.match(about, /<title>Shota Abe \(kyosu-1\) \| kyosu\.dev<\/title>/);
+});
+
+test('/about/ の description に氏名が入る', async () => {
+  const about = await readDist('about/index.html');
+  const desc = metaContent(about, 'name', 'description');
+  assert.ok(desc?.includes('Shota Abe'), `description が想定と違う: ${desc}`);
 });
 
 test('meta description が frontmatter の summary から入る', async () => {
@@ -18,8 +26,10 @@ test('meta description が frontmatter の summary から入る', async () => {
 test('canonical が絶対URLで出る', async () => {
   const home = await readDist('index.html');
   const post = await readDist('blog/introducing-batcha/index.html');
+  const about = await readDist('about/index.html');
   assert.match(home, /<link rel="canonical" href="https:\/\/kyosu\.dev\/"/);
   assert.match(post, /<link rel="canonical" href="https:\/\/kyosu\.dev\/blog\/introducing-batcha\/"/);
+  assert.match(about, /<link rel="canonical" href="https:\/\/kyosu\.dev\/about\/"/);
 });
 
 test('OG タグが出る', async () => {

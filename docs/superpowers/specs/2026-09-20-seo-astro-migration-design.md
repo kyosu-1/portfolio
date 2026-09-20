@@ -42,7 +42,8 @@ kyosu.dev が検索結果に出ていない。体感ではなく構造的な原�
 - デザインの変更。見た目は現状を 1:1 で維持する
 - タグ別一覧ページの追加。記事2本の現状では中身の薄いページの量産になり、評価上むしろマイナスに働きうる。記事が増えてから再検討する
 - 記事ごとの OG 画像自動生成。後から独立して足せる
-- `/about` の独立ページ。経歴はトップページ内に置く。ルートに情報を集約したほうが名前検索に効き、記事2本の規模でページを分けると評価が分散する
+- ~~`/about` の独立ページ。経歴はトップページ内に置く。ルートに情報を集約したほうが名前検索に効き、記事2本の規模でページを分けると評価が分散する~~
+  **[2026-09-20 追記] この方針はユーザーの判断で反転した。** 当初はここに書いたとおり `/about` を作らない前提で本設計・実装を進めたが、「経歴は別ページにしたい。Blog を中心としたい」という方針変更があり、経歴・学歴セクションをトップページから `/about/` へ分離した。トップは Hero（氏名・headline・GitHub/LinkedIn）と Blog 一覧のみになり、Header に `Blog` / `About` の2リンクを持つ。詳細は「トップページの構成とプロフィール」節と「構造化データ」節の追記を参照。
 - メールアドレスの掲載。スパム収集の対象になるため、連絡手段は GitHub と LinkedIn に限る
 - スキル一覧。LinkedIn が自動算出した Python / Terraform / OIDC はブログの内容（Go・AWS・ISUCON）と整合しないため載せない
 
@@ -219,6 +220,18 @@ const { Content } = await render(post);
 
 記事 — `BlogPosting`（`headline` / `description` / `datePublished` / `keywords` / `author` は上記 Person への参照 / `mainEntityOfPage`）。
 
+**[2026-09-20 追記] 経歴の `/about/` 分離に伴い、上記の `Person` は分割した。** 「構造化データは可視コンテンツと一致させる」という本設計の原則をそのまま適用すると、Experience/Education がトップから消えた時点でトップの `Person` から `worksFor` / `alumniOf` を落とす必要があるため。
+
+- `personSchema(site)` — トップ用の軽量版。`name` / `alternateName` / `url` / `jobTitle` / `sameAs` のみ。`@id`（`{site}#person`）を持ち、ページを跨いで同一人物であることを示す
+- `fullPersonSchema(site)` — `/about/` 用。`personSchema` の全項目に `worksFor`（`primaryRole()`）と `alumniOf`（`latestEducation().school`）を加えたもの。`worksFor` は「継続中かつ正社員」で選ぶ。ナガセ（業務委託）も継続中のため、開始日順に頼ると並びを変えた瞬間に `worksFor` が変わってしまう
+- `profilePageSchema(site, url)` — `/about/` の `ProfilePage`。`mainEntity` は `{ "@id": "{site}#person" }` という参照のみで、`fullPersonSchema` をここに入れ子にしない（`@context` の二重化を避けるため）。2つの独立した JSON-LD ブロックとして出力し、`@id` で結びつく
+
+| ページ | ブロック |
+|---|---|
+| `/` | `WebSite` + `Person`（軽量、`@id` 付き） |
+| `/about/` | `ProfilePage`（`mainEntity` は `@id` 参照）+ `Person`（完全版、`@id` 付き） |
+| `/blog/{id}/` | `BlogPosting`（変更なし） |
+
 ### トップページの構成とプロフィール
 
 名前検索でヒットさせるには、その名前がページ上に存在している必要がある。現状の見出しは `Hi, I'm kyosu-1` のみで本名がなく、ページ全体の実テキストもごくわずか。以下の構成にする。
@@ -231,6 +244,15 @@ Blog        記事一覧（現行のまま）
 ```
 
 Hero の見出しを `Hi, I'm Shota Abe (kyosu-1)` に変更し、JSON-LD の `Person.name` / `alternateName` と一致させる。既存のスタイル（`max-w-2xl` / グレー基調 / accent `#4a6cf7`）はそのまま使い、Experience / Education は Blog 見出しと同じ `text-lg font-semibold` のセクション見出しで揃える。
+
+**[2026-09-20 追記] 上記はこの設計時点の構成であり、その後 Experience / Education を `/about/` に分離した。** 現在の構成は次のとおり。
+
+```
+/           Hero（Hi, I'm Shota Abe (kyosu-1) / headline / GitHub · LinkedIn）+ Blog 記事一覧
+/about/     About Me / Shota Abe (kyosu-1) の1行 + Experience（雇用形態バッジ付き）+ Education
+```
+
+Header は `kyosu.dev`（→ `/`）/ `Blog`（→ `/`）/ `About`（→ `/about/`）の3リンクになる。Experience の役職行には雇用形態（正社員 / 業務委託）のバッジをインラインで添える。`TagBadge` の accent 青とは別のグレートーン（`bg-gray-100 text-gray-500`）を使い、タグと雇用形態を見分けられるようにしている。
 
 ### プロフィールデータ (`src/data/profile.ts`)
 
