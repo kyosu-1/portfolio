@@ -3,6 +3,7 @@ import { getCollection, render } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 import TagBadge from '../../components/TagBadge.astro';
 import { formatPostDate } from '../../lib/date';
+import { blogPostingSchema } from '../../lib/structured-data';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog');
@@ -12,6 +13,19 @@ export async function getStaticPaths() {
 const { post } = Astro.props;
 const { Content } = await render(post);
 const displayDate = formatPostDate(post.data.date);
+
+const site = Astro.site!;
+const canonical = new URL(Astro.url.pathname, site).href;
+const schemas = [
+  blogPostingSchema({
+    site,
+    url: canonical,
+    title: post.data.title,
+    description: post.data.summary,
+    date: post.data.date,
+    tags: post.data.tags,
+  }),
+];
 ---
 
 <Layout
@@ -20,6 +34,7 @@ const displayDate = formatPostDate(post.data.date);
   type="article"
   publishedDate={post.data.date}
   tags={post.data.tags}
+  schemas={schemas}
 >
   <article>
     <a href="/" class="text-sm text-gray-400 hover:text-accent">&larr; Back</a>

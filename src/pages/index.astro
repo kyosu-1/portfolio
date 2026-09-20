@@ -4,16 +4,21 @@ import Layout from '../layouts/Layout.astro';
 import BlogCard from '../components/BlogCard.astro';
 import { author, education, experiences, sortExperiences } from '../data/profile';
 import { formatYearMonth } from '../lib/date';
+import { personSchema, websiteSchema } from '../lib/structured-data';
 
 const posts = (await getCollection('blog')).sort(
   (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
 );
 const career = sortExperiences(experiences);
+
+const site = Astro.site!;
+const schemas = [personSchema(site), websiteSchema(site)];
 ---
 
 <Layout
   title="kyosu.dev"
   description="Shota Abe (kyosu-1) のポートフォリオ。ソフトウェアエンジニアとしての経歴と技術ブログ。"
+  schemas={schemas}
 >
   <section class="py-8">
     <h1 class="text-2xl font-bold text-gray-800">

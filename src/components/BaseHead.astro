@@ -5,9 +5,17 @@ interface Props {
   type?: 'website' | 'article';
   publishedDate?: Date;
   tags?: string[];
+  schemas?: object[];
 }
 
-const { title, description, type = 'website', publishedDate, tags = [] } = Astro.props;
+const {
+  title,
+  description,
+  type = 'website',
+  publishedDate,
+  tags = [],
+  schemas = [],
+} = Astro.props;
 
 // Astro.site は astro.config.mjs の site。sitemap の必須要件でもある。
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
@@ -46,3 +54,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site).href;
   href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
   rel="stylesheet"
 />
+
+{schemas.map((schema) => (
+  <script type="application/ld+json" set:html={JSON.stringify(schema)} is:inline />
+))}
