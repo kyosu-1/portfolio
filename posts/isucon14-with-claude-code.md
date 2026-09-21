@@ -7,7 +7,7 @@ summary: ISUCON14（ISURIDE）の計測から改善・デプロイ・記録ま�
 
 # Claude Code に ISUCON14 を回させたら 1,226,980点だった
 
-> **注記:** この記事の文章も、ほとんどを AI（Claude Code）が書いています。作業の記録（journal・計測ログ・会話の履歴）をもとに Claude Code が下書きし、著者は方向づけと内容の確認をしました。
+> この記事の文章は、作業記録をもとにほとんどを AI（Claude Code）が書いています。
 
 [前回](/blog/private-isu-with-claude-code/)は private-isu で試しましたが、今回は実際の過去問の **ISUCON14**（ISURIDE、椅子の配車サービス）を、計測から改善・デプロイ・記録まで Claude Code に回させました。
 
