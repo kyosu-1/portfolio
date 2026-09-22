@@ -37,7 +37,11 @@ const ogImageUrl = ogImage ? new URL(ogImage, Astro.site!).href : undefined;
 
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<link rel="icon" href="/favicon.ico" />
+{/* SVG を優先し、非対応環境と /favicon.ico を直接取りに来るクローラ向けに ICO を残す。
+    生成は scripts/generate-favicon.mjs */}
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="icon" href="/favicon.ico" sizes="32x32" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
 <title>{title}</title>
 <meta name="description" content={description} />
