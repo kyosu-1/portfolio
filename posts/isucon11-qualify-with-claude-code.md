@@ -11,12 +11,11 @@ summary: ISUCON11 予選（ISUCONDITION）を Claude Code に回させました�
 
 [private-isu](/blog/private-isu-with-claude-code/)、[ISUCON14](/blog/isucon14-with-claude-code/)、[ISUCON13](/blog/isucon13-with-claude-code/) に続いて4回目です。今回は **ISUCON11 予選**（ISUCONDITION、椅子のコンディションを記録・閲覧するサービス）を、環境構築から計測・改善・デプロイ・記録まで Claude Code に回させました。
 
-これまでと違うのは準備です。過去3回で得た知見を [isucon-tools](https://github.com/Dorayaki-World/isucon-tools) というリポジトリにまとめてあり、今回はそれを参照させました。最初のプロンプトは「isucon-tools の構成を参考にしつつ、isucon11予選を解いていきたい。環境構築は isuenv で。改善作業を回し、最高点を目指してください。TTL は6時間で設定して、回していきましょう」の1つです。
+これまでと違うのは準備です。過去3回で得た知見を isucon-tools というリポジトリ（非公開）にまとめてあり、今回はそれを参照させました。最初のプロンプトは「isucon-tools の構成を参考にしつつ、isucon11予選を解いていきたい。環境構築は isuenv で。改善作業を回し、最高点を目指してください。TTL は6時間で設定して、回していきましょう」の1つです。
 
 途中で口を挟んだのは5回ほどで、改善の中身は指示していません。コードは1行も書いていません。モデルは **Claude Opus 5.5** です。
 
 - リポジトリ: [kyosu-1/isucon11-qualify-2026](https://github.com/kyosu-1/isucon11-qualify-2026)
-- 参照させたナレッジ: [Dorayaki-World/isucon-tools](https://github.com/Dorayaki-World/isucon-tools)
 - 環境構築に使った自作CLI: [kyosu-1/isuenv](https://github.com/kyosu-1/isuenv)
 
 ## 結果
@@ -223,4 +222,3 @@ ISUCONDITION は、ISU がコンディションを送る先のホスト名をア
 - [docs/journal.md](https://github.com/kyosu-1/isucon11-qualify-2026/blob/main/docs/journal.md) — 実行コマンド、効かなかったこと、ハマった点
 - [scores/log.md](https://github.com/kyosu-1/isucon11-qualify-2026/blob/main/scores/log.md) — 全40回の計測記録
 - [SKILL.md](https://github.com/kyosu-1/isucon11-qualify-2026/blob/main/.claude/skills/tuning-isucon11q/SKILL.md) — 判断基準と、ISUCONDITION で実測して分かったこと
-- [isucon-tools の ISUCON11 予選のページ](https://github.com/Dorayaki-World/isucon-tools/blob/main/docs/contests/isucon11-qualify.md) — 汎用化した知見
