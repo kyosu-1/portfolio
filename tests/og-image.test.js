@@ -9,7 +9,6 @@ const OG_IMAGES = [
   'og/home.png',
   'og/about.png',
   'og/blog/introducing-batcha.png',
-  'og/blog/private-isu-with-claude-code.png',
 ];
 
 /** IHDR チャンクから width / height を読む（PNG は常にこの位置に固定長で入る） */
@@ -17,7 +16,7 @@ function readPngSize(buf) {
   return { width: buf.readUInt32BE(16), height: buf.readUInt32BE(20) };
 }
 
-test('OG 画像が4枚とも生成される', async () => {
+test('OG 画像が3枚とも生成される', async () => {
   for (const path of OG_IMAGES) {
     const buf = await readDistBinary(path);
     assert.ok(buf.length > 0, `${path} が空ファイル`);

@@ -78,11 +78,6 @@ test('og:image / twitter:image が絶対URLで出て、対応する画像ファ�
       'https://kyosu.dev/og/blog/introducing-batcha.png',
       'og/blog/introducing-batcha.png',
     ],
-    [
-      'blog/private-isu-with-claude-code/index.html',
-      'https://kyosu.dev/og/blog/private-isu-with-claude-code.png',
-      'og/blog/private-isu-with-claude-code.png',
-    ],
   ];
 
   for (const [htmlPath, expectedUrl, imagePath] of cases) {
